@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=League+Gothic&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" integrity="sha384-e6nUZLBkQ86NJ6TVVKAeSaK8jWa3NhkYWZFomE39AvDbQWeie9PlQqM3pmYW5d1g" crossorigin="anonymous"></script>
 <style>
 /* ── INITIATIVE BRAND TOKENS ─────────────────────────────── */
 :root {
@@ -594,7 +594,7 @@ function enterApp(u){
   appReady=true;
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('app').classList.add('on');
-  document.getElementById('uinfo').innerHTML=(u.picture?`<img src="${u.picture}" alt="">`:'')+'<span>'+esc(u.name||u.email)+'</span>';
+  document.getElementById('uinfo').innerHTML=(u.picture?`<img src="${esc(u.picture)}" alt="">`:'')+'<span>'+esc(u.name||u.email)+'</span>';
   loadData();
 }
 function showLogin(){
@@ -1073,7 +1073,7 @@ function agDateTable(elId,rows,metric,fmtFn){
   const dates=Object.keys(byDate).sort().reverse();const agArr=[...ags].sort();
   if(!dates.length){document.getElementById(elId).innerHTML='<div class="empty">No data.</div>';return;}
   document.getElementById(elId).innerHTML=`<table><thead><tr><th>Date</th><th class="tr">Total</th>${agArr.map(a=>`<th class="tr" title="${esc(a)}">${esc(trunc(a,14))}</th>`).join('')}</tr></thead><tbody>`+
-  dates.map(d=>`<tr><td class="mc">${d}</td><td class="mc tr">${fmtFn(byDate[d].total)}</td>${agArr.map(a=>`<td class="mc tr">${byDate[d][a]?fmtFn(byDate[d][a]):'—'}</td>`).join('')}</tr>`).join('')+
+  dates.map(d=>`<tr><td class="mc">${esc(d)}</td><td class="mc tr">${fmtFn(byDate[d].total)}</td>${agArr.map(a=>`<td class="mc tr">${byDate[d][a]?fmtFn(byDate[d][a]):'—'}</td>`).join('')}</tr>`).join('')+
   '</tbody></table>';
 }
 
@@ -1136,7 +1136,13 @@ function rc(r){return r>=3?'rh':r>=2?'rm':'rl';}
 // Graphs come straight from the live Chart.js datasets (already raw).
 // Tables are rebuilt from the Derived Layer so values are full-precision
 // numbers (no $/K/M/x/% formatting), honouring the active filters.
-function csvCell(v){v=(v==null?'':String(v));return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;}
+function csvCell(v){
+  v=(v==null?'':String(v));
+  // Neutralize CSV/formula injection: a leading = + - @ (or tab/CR) lets a
+  // crafted campaign/product name run as a formula when opened in Excel/Sheets.
+  if(/^[=+\-@\t\r]/.test(v))v="'"+v;
+  return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;
+}
 
 function downloadCsv(rows,fileBase){
   const cs=document.getElementById('selClient');

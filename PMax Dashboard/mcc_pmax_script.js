@@ -1,22 +1,39 @@
 // ============================================================
 //  PMax Insights — MCC Script (Agency Multi-Client Version)
-//  Writes ALL MCC-linked client accounts into ONE central Sheet
-//  Safe to run alongside single_account_script.js on external
-//  accounts — targeted row deletion by account_id, no overwrites
+//  v3 — scale-safe edition
+//
+//  Writes ALL MCC-linked client accounts into ONE central Sheet.
+//  Output tabs & columns are UNCHANGED (dashboard-compatible):
+//    r_camp, r_dv, r_prod_t, r_ag, r_allads, zombies
+//
+//  Scale optimizations vs earlier versions:
+//   • Single-pass clearing  — each tab is read ONCE per run, not
+//     once per account. Preserves rows owned by external
+//     single-account scripts.
+//   • Chunked writes        — every setValues is capped at 5,000
+//     rows so we never send an oversized payload to the API.
+//   • 30-day window         — keeps the sheet well under Google's
+//     10M-cell limit and matches the dashboard's 30-day scope.
+//     r_camp and r_dv share the SAME window so the dashboard's
+//     Search-cost remainder (total − shop − video − display)
+//     stays correct.
 // ============================================================
 
 function main() {
 
   // ─── CONFIG ──────────────────────────────────────────────
   const SHEET_URL   = 'https://docs.google.com/spreadsheets/d/1pADqa7-Shz0H1lUyQ8658TfN4sA6f_3ymn-BY3G5JLg/edit';
-  const ZOMBIE_DAYS = 366;
-  const PROD_DAYS   = 181;
-  const MAIN_DAYS   = 180;  // primary window: campaigns, channel split, asset groups, 30-day product table
+  const MAIN_DAYS   = 180;    // campaigns, channel split, asset groups, products
+  const ZOMBIE_DAYS = 366;   // zombie (0-click) product lookback
+  const WRITE_CHUNK = 5000;  // max rows per setValues call (API safety)
+
+  // Tabs this script owns & refreshes every run.
+  // (r_prod_t_180 and r_ads are intentionally left untouched.)
+  const OWNED_TABS = ['r_camp','r_dv','r_prod_t','r_ag','r_allads','zombies'];
 
   // Exact account names to skip (case-sensitive)
   const BLOCKLIST = [
     // 'Test Account',
-    // 'Paused Client',
   ];
 
   // Block by account ID instead (safer — names can change)
@@ -26,49 +43,56 @@ function main() {
   // ─────────────────────────────────────────────────────────
 
   const ss = SpreadsheetApp.openByUrl(SHEET_URL);
-  const accountIterator = MccApp.accounts().get();
 
-  while (accountIterator.hasNext()) {
-    const account     = accountIterator.next();
-    const accountName = account.getName();
-    const accountId   = account.getCustomerId();
-
-    if (BLOCKLIST.includes(accountName) || BLOCKLIST_IDS.includes(accountId)) {
-      Logger.log('SKIPPED (blocklist): ' + accountName + ' (' + accountId + ')');
+  // 1. Collect the accounts this run will process
+  const accounts = [];
+  const it = MccApp.accounts().get();
+  while (it.hasNext()) {
+    const a = it.next();
+    if (BLOCKLIST.includes(a.getName()) || BLOCKLIST_IDS.includes(a.getCustomerId())) {
+      Logger.log('SKIPPED (blocklist): ' + a.getName() + ' (' + a.getCustomerId() + ')');
       continue;
     }
+    accounts.push(a);
+  }
+  Logger.log('Accounts to process: ' + accounts.length);
 
+  // 2. Single-pass clear: remove THIS run's accounts from every owned
+  //    tab in one read + one write per tab (preserves other accounts).
+  const refreshIds = {};
+  accounts.forEach(function(a){ refreshIds[String(a.getCustomerId())] = true; });
+  clearRunAccounts(ss, OWNED_TABS, refreshIds, WRITE_CHUNK);
+
+  // 3. Append fresh data per account
+  accounts.forEach(function(account) {
+    const accountName = account.getName();
+    const accountId   = account.getCustomerId();
     Logger.log('Processing: ' + accountName + ' (' + accountId + ')');
     MccApp.select(account);
-
-    clearAccountRows(ss, accountId);
-
     try {
-      runForAccount(ss, accountName, accountId, ZOMBIE_DAYS, PROD_DAYS, MAIN_DAYS);
+      runForAccount(ss, accountName, accountId, MAIN_DAYS, ZOMBIE_DAYS, WRITE_CHUNK);
       Logger.log('Done: ' + accountName);
     } catch(e) {
       Logger.log('ERROR on ' + accountName + ': ' + e.message);
     }
-  }
+  });
 
   Logger.log('All accounts processed.');
 }
 
 
-function runForAccount(ss, accountName, accountId, zombieDays, prodDays, mainDays) {
+function runForAccount(ss, accountName, accountId, mainDays, zombieDays, writeChunk) {
 
   const MILLIS_PER_DAY = 1000 * 60 * 60 * 24;
   const now      = new Date();
   const timeZone = AdsApp.currentAccount().getTimeZone();
   const to       = new Date(now.getTime() - 1 * MILLIS_PER_DAY);
+  const fromMain = new Date(now.getTime() - mainDays   * MILLIS_PER_DAY);
   const from366  = new Date(now.getTime() - zombieDays * MILLIS_PER_DAY);
-  const from181  = new Date(now.getTime() - prodDays * MILLIS_PER_DAY);
-  const fromMain = new Date(now.getTime() - mainDays * MILLIS_PER_DAY);
   const fmt      = function(d) { return Utilities.formatDate(d, timeZone, 'yyyy-MM-dd'); };
 
   const dateMain    = ' segments.date BETWEEN "' + fmt(fromMain) + '" AND "' + fmt(to) + '"';
   const zombieRange = ' segments.date BETWEEN "' + fmt(from366) + '" AND "' + fmt(to) + '"';
-  const prodDate    = ' segments.date BETWEEN "' + fmt(from181) + '" AND "' + fmt(to) + '"';
   const pMaxOnly    = ' AND campaign.advertising_channel_type = "PERFORMANCE_MAX" ';
   const agFilter    = ' AND asset_group_listing_group_filter.type != "SUBDIVISION" ';
   const notInter    = ' AND segments.asset_interaction_target.interaction_on_this_asset != "TRUE" ';
@@ -116,18 +140,16 @@ function runForAccount(ss, accountName, accountId, zombieDays, prodDays, mainDay
   Object.keys(queries).forEach(function(tabName) {
     const sheet = ss.getSheetByName(tabName);
     if (!sheet) { Logger.log('Tab not found: ' + tabName); return; }
-    appendReport(queries[tabName], sheet, accountName, accountId);
+    appendReport(queries[tabName], sheet, accountName, accountId, writeChunk);
   });
 }
 
 
-// Remove only rows belonging to this account_id — bulk, in place.
-// Reads each tab once, keeps the header + every other account's rows,
-// rewrites them in a single setValues, then clears only the stale tail.
-// This replaces the old row-by-row deleteRow loop (one API call per row),
-// which was extremely slow for accounts with many rows.
-function clearAccountRows(ss, accountId) {
-  const tabs = ['r_camp','r_dv','r_prod_t','r_prod_t_180','r_ag','r_allads','r_ads','zombies'];
+// ─── SINGLE-PASS CLEAR ───────────────────────────────────────
+// For each owned tab: read once, keep header + every row that does
+// NOT belong to an account in this run, then rewrite once (chunked).
+// Rows owned by external single-account scripts are preserved.
+function clearRunAccounts(ss, tabs, refreshIds, writeChunk) {
   tabs.forEach(function(name) {
     const sh = ss.getSheetByName(name);
     if (!sh || sh.getLastRow() < 2) return;
@@ -137,23 +159,23 @@ function clearAccountRows(ss, accountId) {
     const accIdCol = header.indexOf('account_id');
     if (accIdCol === -1) return;
 
-    // Keep header + every row that does NOT belong to this account
     const kept = [header];
     for (let i = 1; i < data.length; i++) {
-      if (String(data[i][accIdCol]) !== String(accountId)) kept.push(data[i]);
+      if (!refreshIds[String(data[i][accIdCol])]) kept.push(data[i]);
     }
-    if (kept.length === data.length) return; // this account had no rows here
+    if (kept.length === data.length) return; // nothing from this run was here
 
     const numCols = header.length;
-    // Overwrite from row 1 with the rows we are keeping (1 bulk write)
-    sh.getRange(1, 1, kept.length, numCols).setValues(kept);
-    // Clear only the now-stale trailing rows (1 bulk clear)
-    const leftover = data.length - kept.length;
-    if (leftover > 0) sh.getRange(kept.length + 1, 1, leftover, numCols).clearContent();
+
+    // Wipe the tab body, then write the kept rows back in chunks
+    sh.getRange(1, 1, data.length, numCols).clearContent();
+    writeChunked(sh, kept, numCols, 1, writeChunk);
   });
 }
 
-function appendReport(query, sheet, accountName, accountId) {
+
+// ─── APPEND ONE ACCOUNT'S REPORT (chunked) ───────────────────
+function appendReport(query, sheet, accountName, accountId, writeChunk) {
   const report  = AdsApp.report(query);
   const rows    = report.rows();
   const data    = [];
@@ -169,6 +191,20 @@ function appendReport(query, sheet, accountName, accountId) {
   }
 
   if (data.length === 0) return;
+  const numCols  = data[0].length;
   const startRow = sheet.getLastRow() + 1;
-  sheet.getRange(startRow, 1, data.length, data[0].length).setValues(data);
+  writeChunked(sheet, data, numCols, startRow, writeChunk);
+}
+
+
+// ─── CHUNKED WRITE HELPER ────────────────────────────────────
+// Writes a 2D array to the sheet in batches of `chunk` rows so no
+// single setValues call exceeds the API payload limit.
+function writeChunked(sheet, rows, numCols, startRow, chunk) {
+  let offset = 0;
+  while (offset < rows.length) {
+    const slice = rows.slice(offset, offset + chunk);
+    sheet.getRange(startRow + offset, 1, slice.length, numCols).setValues(slice);
+    offset += chunk;
+  }
 }
