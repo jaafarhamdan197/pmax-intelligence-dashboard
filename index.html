@@ -1,0 +1,1280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Initiative · PMax Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=League+Gothic&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+/* ── INITIATIVE BRAND TOKENS ─────────────────────────────── */
+:root {
+  --black:     #000000;
+  --white:     #FFFFFF;
+  --off-white: #F5F5F2;
+  --charcoal:  #161616;
+  --dark-gray: #2B2B2B;
+  --mid-gray:  #777777;
+  --light-gray:#E6E6E2;
+  --soft-gray: #F0F0EC;
+  --ink-blue:  #5EC7EB;  /* Initiative primary */
+  --secondary: #FFFF99;  /* Initiative secondary */
+
+  /* Accent (data meaning only) */
+  --growth:    #00A676;
+  --attention: #FFB000;
+  --risk:      #E53935;
+  --info:      #2196F3;  /* Initiative accent/link */
+  --culture:   #9B5DE5;
+
+  /* Channel colours (chart data) */
+  --shop:    #2F6BFF;
+  --video:   #E53935;
+  --display: #FFB000;
+  --search:  #00A676;
+
+  /* Layout */
+  --page-pad:  32px;
+  --sec-gap:   28px;
+  --card-gap:  16px;
+  --card-pad:  24px;
+
+  /* Type — Initiative: Poppins (body), League Gothic (display), mono for data */
+  --ui: "Poppins","Helvetica Neue",Arial,sans-serif;
+  --display: "League Gothic","Impact",sans-serif;
+  --mono: "JetBrains Mono","Fira Mono",monospace;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body { background: var(--off-white); color: var(--black); font-family: var(--ui); font-size: 14px; }
+
+/* ── LOGIN ───────────────────────────────────────────────── */
+#loginScreen {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 100vh; background: var(--black);
+}
+.login-box {
+  width: 440px; padding: 56px 48px; text-align: center;
+  border: 1px solid #2b2b2b;
+}
+.login-logo { margin-bottom: 32px; }
+.login-logo svg { width: 180px; height: auto; }
+.login-title {
+  font-size: 11px; font-weight: 700; letter-spacing: .18em;
+  text-transform: uppercase; color: var(--mid-gray); margin-bottom: 8px;
+}
+.login-sub {
+  font-size: 13px; color: #555; line-height: 1.6; margin-bottom: 36px;
+}
+.g-btn {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: var(--white); color: var(--black);
+  border: none; padding: 12px 22px;
+  font-size: 13px; font-weight: 700; cursor: pointer;
+  font-family: var(--ui); letter-spacing: .04em;
+  text-transform: uppercase; transition: opacity .15s;
+}
+.g-btn:hover { opacity: .88; }
+.g-btn svg { width: 17px; height: 17px; }
+.login-err { font-size: 12px; color: var(--risk); margin-top: 14px; min-height: 18px; }
+
+/* ── APP SHELL ───────────────────────────────────────────── */
+#app { display: none; grid-template-columns: 260px 1fr; grid-template-rows: 64px auto 1fr; min-height: 100vh; }
+#app.on { display: grid; }
+
+/* ── TOPBAR ──────────────────────────────────────────────── */
+.topbar {
+  grid-column: 1 / -1;
+  background: var(--black); color: var(--white);
+  display: flex; align-items: center; padding: 0 var(--page-pad); gap: 16px;
+  border-bottom: 1px solid #222;
+}
+.topbar-logo svg { width: 110px; height: auto; display: block; }
+.topbar-div { width: 1px; height: 24px; background: #333; }
+.topbar-title {
+  font-size: 11px; font-weight: 700; letter-spacing: .14em;
+  text-transform: uppercase; color: #666;
+}
+.topbar-sp { flex: 1; }
+.topbar-ts { font-size: 11px; color: #555; letter-spacing: .04em; }
+.topbar-user { font-size: 12px; color: #888; display: flex; align-items: center; gap: 8px; }
+.topbar-user img { width: 24px; height: 24px; border-radius: 50%; border: 1px solid #333; }
+.t-btn {
+  background: var(--white); color: var(--black);
+  border: none; padding: 8px 16px;
+  font-size: 11px; font-weight: 700; cursor: pointer;
+  font-family: var(--ui); letter-spacing: .06em; text-transform: uppercase;
+}
+.t-btn:hover { background: var(--light-gray); }
+.dl-wrap { position: relative; display: inline-block; }
+.dl-menu {
+  display: none; position: absolute; right: 0; top: calc(100% + 6px);
+  background: var(--charcoal); border: 1px solid #333; min-width: 280px;
+  max-height: 70vh; overflow-y: auto; z-index: 200; padding: 6px 0;
+  box-shadow: 0 12px 32px rgba(0,0,0,.45);
+}
+.dl-menu.on { display: block; }
+.dl-grp {
+  font-size: 9px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--mid-gray); padding: 10px 16px 6px;
+}
+.dl-item {
+  padding: 8px 16px; font-size: 12px; color: var(--white); cursor: pointer;
+  font-family: var(--ui); display: flex; justify-content: space-between; gap: 12px;
+}
+.dl-item:hover { background: #2b2b2b; }
+.dl-item .dl-ic { color: var(--mid-gray); }
+.dl-item.dl-all { border-top: 1px solid #333; margin-top: 6px; font-weight: 700; }
+.t-btn-ghost {
+  background: transparent; color: #666;
+  border: 1px solid #333; padding: 7px 14px;
+  font-size: 11px; font-weight: 600; cursor: pointer;
+  font-family: var(--ui); text-transform: uppercase; letter-spacing: .04em;
+}
+.t-btn-ghost:hover { color: var(--white); border-color: #666; }
+
+/* ── SIDEBAR ─────────────────────────────────────────────── */
+.sidebar {
+  background: var(--charcoal); color: var(--white);
+  padding: 28px 20px; display: flex; flex-direction: column; gap: 20px;
+  overflow-y: auto; grid-row: 2 / 4; border-right: 1px solid #222;
+}
+.slabel {
+  font-size: 10px; font-weight: 700; letter-spacing: .12em;
+  text-transform: uppercase; color: #555; margin-bottom: 6px;
+}
+.sidebar select {
+  width: 100%; background: #1e1e1e; border: 1px solid #333;
+  color: var(--white); font-size: 12px; padding: 9px 26px 9px 10px;
+  outline: none; cursor: pointer; appearance: none; font-family: var(--ui);
+  text-transform: uppercase; letter-spacing: .04em;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%23555' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 9px center; background-color: #1e1e1e;
+}
+.sidebar select:focus { border-color: var(--ink-blue); }
+
+/* ── SEARCHABLE COMBO (campaign) ─────────────────────────── */
+.combo { position: relative; }
+.combo-input {
+  width: 100%; background: #1e1e1e; border: 1px solid #333;
+  color: var(--white); font-size: 12px; padding: 9px 10px; outline: none;
+  font-family: var(--ui); text-transform: uppercase; letter-spacing: .04em;
+}
+.combo-input::placeholder { color: #888; text-transform: uppercase; letter-spacing: .04em; }
+.combo-input:focus { border-color: var(--ink-blue); }
+.combo-list {
+  display: none; position: absolute; top: 100%; left: 0; right: 0; z-index: 50;
+  background: #1e1e1e; border: 1px solid #333; border-top: none;
+  max-height: 260px; overflow-y: auto;
+}
+.combo.open .combo-list { display: block; }
+.combo-opt {
+  padding: 8px 10px; font-size: 12px; color: #ccc; cursor: pointer;
+  text-transform: uppercase; letter-spacing: .04em;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.combo-opt:hover, .combo-opt.hi { background: #2b2b2b; color: var(--white); }
+.combo-opt.on { color: var(--ink-blue); }
+.combo-empty { padding: 8px 10px; font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: .04em; }
+
+.sidebar-div { height: 1px; background: #2b2b2b; }
+
+.zbox {
+  border: 1px solid #3d1a1a; background: #1a0f0f;
+  padding: 16px; text-align: center;
+}
+.zbox .zn { font-size: 36px; font-weight: 900; color: var(--risk); font-family: var(--mono); line-height: 1; }
+.zbox .zl { font-size: 9px; color: #555; margin-top: 6px; line-height: 1.5; text-transform: uppercase; letter-spacing: .08em; }
+
+.sfooter { margin-top: auto; font-size: 10px; color: #444; line-height: 1.9; letter-spacing: .04em; text-transform: uppercase; border-top: 1px solid #2b2b2b; padding-top: 16px; }
+
+/* ── NAV TABS ────────────────────────────────────────────── */
+.main-nav {
+  grid-column: 2 / 3; display: flex; gap: 0;
+  background: var(--white); border-bottom: 1px solid var(--light-gray);
+  padding: 0 var(--page-pad);
+}
+.nav-tab {
+  padding: 16px 18px; font-size: 10px; font-weight: 700;
+  color: var(--mid-gray); cursor: pointer;
+  border-bottom: 3px solid transparent; margin-bottom: -1px;
+  text-transform: uppercase; letter-spacing: .1em;
+  transition: color .12s, border-color .12s; white-space: nowrap;
+}
+.nav-tab.on { color: var(--black); border-bottom-color: var(--black); }
+.nav-tab:hover:not(.on) { color: var(--dark-gray); }
+
+/* ── MAIN AREA ───────────────────────────────────────────── */
+.main-area { overflow-y: auto; background: var(--off-white); }
+.main { padding: var(--page-pad); display: flex; flex-direction: column; gap: var(--sec-gap); }
+.page { display: none; flex-direction: column; gap: var(--sec-gap); }
+.page.on { display: flex; }
+
+/* ── LOADER ──────────────────────────────────────────────── */
+.loader {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,.85); z-index: 200;
+  align-items: center; justify-content: center;
+  flex-direction: column; gap: 16px; font-size: 11px;
+  color: #666; letter-spacing: .1em; text-transform: uppercase;
+}
+.loader.on { display: flex; }
+.spin {
+  width: 32px; height: 32px; border: 2px solid #333;
+  border-top-color: var(--white); border-radius: 50%;
+  animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── FILTER BAR ──────────────────────────────────────────── */
+.fbar {
+  background: var(--white); border: 1px solid var(--light-gray);
+  padding: 10px 16px; font-size: 11px; color: var(--mid-gray);
+  letter-spacing: .04em; text-transform: uppercase;
+  display: flex; align-items: center; gap: 8px;
+}
+.fbar strong { color: var(--black); font-weight: 700; }
+
+/* ── SECTION HEADERS ─────────────────────────────────────── */
+.sec-hdr {
+  font-size: 18px; font-weight: 400; text-transform: uppercase;
+  letter-spacing: .14em; color: var(--black);
+  font-family: var(--display);
+  border-top: 3px solid var(--black); padding-top: 14px;
+  margin-bottom: -8px;
+}
+
+/* ── KPI CARDS ───────────────────────────────────────────── */
+.kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: var(--card-gap); }
+.kpi {
+  background: var(--white); border: 1px solid var(--light-gray);
+  padding: var(--card-pad); border-radius: 8px; position: relative; overflow: hidden;
+}
+.kpi::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--kc, var(--black)); }
+.kpi .kl { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--mid-gray); margin-bottom: 12px; }
+.kpi .kv { font-size: 36px; font-weight: 800; color: var(--black); line-height: 1; }
+.kpi .ks { font-size: 11px; color: var(--mid-gray); margin-top: 8px; letter-spacing: .02em; }
+
+/* ── PANELS ──────────────────────────────────────────────── */
+.panel {
+  background: var(--white); border: 1px solid var(--light-gray);
+  padding: var(--card-pad); border-radius: 8px;
+}
+.ph { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.ph h2 { font-size: 15px; font-weight: 400; text-transform: uppercase; letter-spacing: .12em; color: var(--black); font-family: var(--display); }
+.badge { font-size: 10px; background: var(--soft-gray); border: 1px solid var(--light-gray); color: var(--mid-gray); padding: 3px 9px; letter-spacing: .04em; text-transform: uppercase; }
+
+/* ── GRIDS ───────────────────────────────────────────────── */
+.g2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--card-gap); }
+.g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--card-gap); }
+.g4 { display: grid; grid-template-columns: repeat(4,1fr); gap: var(--card-gap); }
+@media(max-width:900px){ .g2,.g3,.g4 { grid-template-columns: 1fr; } }
+
+/* ── CHART WRAPPERS ──────────────────────────────────────── */
+.cw { position: relative; width: 100%; }
+
+/* ── INNER TABS ──────────────────────────────────────────── */
+.tbar { display: flex; gap: 0; border-bottom: 1px solid var(--light-gray); margin-bottom: 14px; }
+.itab {
+  padding: 8px 14px; font-size: 10px; font-weight: 700;
+  color: var(--mid-gray); cursor: pointer; border-bottom: 2px solid transparent;
+  margin-bottom: -1px; transition: color .12s, border-color .12s;
+  text-transform: uppercase; letter-spacing: .08em;
+}
+.itab.on { color: var(--black); border-bottom-color: var(--black); }
+.itab:hover:not(.on) { color: var(--dark-gray); }
+.tpane { display: none; }
+.tpane.on { display: block; }
+
+/* ── DATA TABLES ─────────────────────────────────────────── */
+.sw { max-height: 460px; overflow: auto; }
+table { width: 100%; border-collapse: collapse; }
+th {
+  text-align: left; font-size: 9px; text-transform: uppercase;
+  letter-spacing: .08em; color: var(--mid-gray); font-weight: 700;
+  padding: 8px 10px; border-bottom: 2px solid var(--light-gray);
+  position: sticky; top: 0; background: var(--white); white-space: nowrap; cursor: pointer;
+}
+th:hover { color: var(--black); }
+td { padding: 9px 10px; font-size: 12px; border-bottom: 1px solid var(--light-gray); color: var(--black); white-space: nowrap; }
+tr:last-child td { border-bottom: none; }
+tbody tr:hover td { background: var(--soft-gray); }
+.mc { font-family: var(--mono); font-size: 11px; }
+.tr { text-align: right; }
+.rh { color: var(--growth); font-weight: 700; }
+.rm { color: var(--attention); font-weight: 600; }
+.rl { color: var(--risk); }
+.wasted td { color: var(--risk); }
+.wasted td:first-child::before { content: '⚠ '; font-size: 10px; }
+
+/* ── CHANNEL DOTS ────────────────────────────────────────── */
+.dot { display: inline-block; width: 7px; height: 7px; margin-right: 5px; }
+.ds { background: var(--shop); } .dv { background: var(--video); }
+.dd { background: var(--display); } .dx { background: var(--search); }
+
+/* ── LEGEND ──────────────────────────────────────────────── */
+.legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 10px; color: var(--mid-gray); margin-bottom: 12px; text-transform: uppercase; letter-spacing: .06em; }
+.legend span { display: flex; align-items: center; gap: 5px; }
+
+/* ── STRENGTH GRID ───────────────────────────────────────── */
+.sg { display: grid; grid-template-columns: repeat(5,1fr); gap: 8px; text-align: center; }
+.sc .sn { font-size: 32px; font-weight: 900; line-height: 1; }
+.sc .sl { font-size: 9px; text-transform: uppercase; letter-spacing: .08em; color: var(--mid-gray); margin-top: 5px; font-weight: 700; }
+.se { color: var(--growth); } .sg-g { color: var(--info); }
+.sp { color: var(--risk); }   .sn-p { color: var(--attention); } .so { color: var(--mid-gray); }
+
+/* ── SPARKLINE ───────────────────────────────────────────── */
+.spark { display: flex; align-items: flex-end; gap: 1px; height: 28px; min-width: 60px; }
+.sb { flex: 1; border-radius: 0; min-width: 2px; }
+
+/* ── CHANNEL KPIS (colored top border) ───────────────────── */
+.ck-shop    { --kc: var(--shop);    }
+.ck-video   { --kc: var(--video);   }
+.ck-display { --kc: var(--display); }
+.ck-search  { --kc: var(--search);  }
+
+/* ── EMPTY ───────────────────────────────────────────────── */
+.empty { padding: 40px; text-align: center; color: var(--mid-gray); font-size: 12px; text-transform: uppercase; letter-spacing: .08em; }
+</style>
+</head>
+<body>
+
+<!-- ── LOGIN ─────────────────────────────────────────────── -->
+<div id="loginScreen" style="display:none">
+  <div class="login-box">
+    <div class="login-logo">
+      <!-- Initiative SVG logo, white version -->
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 618 446" width="200" height="auto">
+        <g>
+          <path d="M 118.42 265.75 C117.15,267.70 116.09,268.00 110.48,268.00 C105.72,268.00 104.00,267.64 104.00,266.66 C104.00,264.28 136.95,196.55 138.76,195.21 C139.71,194.49 142.30,194.04 144.50,194.21 C149.00,194.54 149.20,195.22 146.53,201.40 L 144.85 205.29 L 150.68 200.10 C161.61,190.35 172.70,186.73 180.02,190.51 C188.22,194.75 186.81,202.08 172.98,227.03 C167.58,236.78 165.57,241.45 165.23,245.00 C164.83,249.12 165.04,249.88 166.75,250.42 C167.84,250.77 169.85,250.63 171.22,250.11 C177.04,247.89 190.31,228.54 201.65,205.74 C205.95,197.07 210.16,189.80 210.99,189.58 C216.20,188.19 219.80,188.05 220.25,189.23 C220.51,189.93 215.62,201.75 209.38,215.50 C196.75,243.35 195.80,247.24 201.55,247.80 C205.64,248.20 208.90,245.49 216.27,235.57 C221.08,229.09 237.00,199.19 237.00,196.63 C237.00,196.28 235.60,196.00 233.89,196.00 C231.00,196.00 230.83,195.81 231.47,193.25 C232.46,189.30 234.75,187.16 238.35,186.81 C241.38,186.51 241.87,185.75 251.00,167.25 C256.23,156.67 261.17,147.39 262.00,146.63 C264.17,144.63 271.92,143.62 272.55,145.26 C273.02,146.49 270.98,151.56 260.65,174.82 L 256.06 185.14 L 261.78 184.88 C268.56,184.56 269.52,186.04 265.58,190.72 C263.50,193.19 262.08,193.82 257.43,194.30 C254.33,194.62 251.68,195.02 251.55,195.19 C250.20,196.97 232.00,239.41 232.00,240.77 C232.00,243.49 234.00,245.00 237.59,245.00 C240.21,245.00 241.78,243.92 246.30,239.04 C253.72,231.03 261.69,218.63 271.25,200.24 C275.61,191.84 280.01,184.53 281.02,183.99 C282.04,183.44 284.47,183.00 286.43,183.00 C289.08,183.00 290.00,183.43 290.00,184.65 C290.00,186.06 286.20,194.57 269.87,229.66 C266.57,236.74 266.26,240.06 268.75,241.61 C273.64,244.66 278.34,240.62 287.74,225.31 C304.13,198.61 314.30,186.50 325.85,179.90 C336.28,173.95 345.16,175.16 348.63,183.02 L 350.42 187.08 L 352.36 183.29 C353.43,181.20 355.02,178.95 355.90,178.28 C357.72,176.90 365.61,176.56 366.40,177.84 C366.68,178.30 361.77,190.34 355.47,204.59 C349.18,218.84 344.02,231.28 344.01,232.23 C344.01,233.18 345.09,234.67 346.42,235.54 C348.58,236.96 349.16,236.97 351.67,235.65 C356.89,232.93 366.50,218.35 376.15,198.50 C379.36,191.90 381.99,186.16 382.00,185.75 C382.00,185.34 380.95,185.00 379.67,185.00 C376.24,185.00 376.03,184.31 378.13,179.96 C379.74,176.63 380.64,175.92 383.92,175.40 L 387.79 174.78 L 397.13 155.28 C402.26,144.56 407.36,135.16 408.46,134.39 C410.69,132.83 417.58,132.51 418.46,133.93 C418.77,134.44 415.20,143.43 410.51,153.91 C405.83,164.39 402.00,173.25 402.00,173.60 C402.00,173.95 404.43,173.93 407.40,173.56 C413.71,172.77 414.75,173.65 412.53,177.94 C410.54,181.80 408.19,183.00 402.69,183.00 C400.24,183.00 397.82,183.56 397.30,184.25 C395.29,186.90 378.00,226.77 378.00,228.76 C378.00,231.62 380.60,234.00 383.74,234.00 C389.59,234.00 402.37,216.31 415.17,190.50 C419.53,181.70 423.84,173.94 424.74,173.25 C426.40,171.99 435.00,171.47 435.00,172.63 C435.00,173.43 428.71,188.24 419.91,208.14 C416.11,216.74 413.00,224.86 413.00,226.19 C413.00,231.38 417.98,232.57 422.79,228.52 C429.36,222.99 443.96,200.28 454.08,179.83 C458.64,170.60 460.49,169.00 466.55,169.00 C468.88,169.00 470.00,169.47 470.00,170.43 C470.00,171.22 466.02,179.88 461.15,189.68 C449.39,213.36 444.80,223.71 445.18,225.67 C445.36,226.56 446.25,227.76 447.18,228.34 C452.98,232.00 471.28,211.35 481.67,189.40 C485.97,180.33 485.99,180.23 484.44,176.50 C480.53,167.15 488.30,156.61 496.89,159.63 C500.54,160.91 502.41,166.83 501.11,172.93 C499.96,178.32 500.85,179.33 505.97,178.44 C510.75,177.60 514.33,175.64 522.64,169.32 C526.57,166.34 532.08,163.02 534.90,161.95 C549.53,156.39 560.43,163.46 555.26,175.15 C552.26,181.93 547.56,186.58 539.79,190.47 C532.50,194.11 528.98,194.71 524.57,193.02 C520.88,191.62 521.41,190.00 525.54,190.00 C532.74,190.00 540.84,183.42 544.54,174.57 C546.43,170.02 545.14,167.00 541.30,167.00 C530.10,167.00 509.21,194.35 508.19,210.34 C507.84,215.93 508.07,216.97 510.27,219.53 C512.50,222.12 513.34,222.40 518.40,222.28 C529.91,222.02 544.63,211.59 556.02,195.63 C560.60,189.22 561.23,191.95 556.97,199.72 C549.63,213.13 537.39,227.29 527.52,233.79 C513.78,242.86 500.63,241.05 494.89,229.32 C490.17,219.68 492.90,206.56 502.71,191.74 C505.34,187.76 507.63,184.20 507.80,183.84 C507.97,183.48 506.50,183.55 504.53,183.99 C502.56,184.44 500.09,184.58 499.05,184.30 C497.58,183.92 496.64,184.81 494.96,188.15 C483.88,210.19 463.31,235.36 451.02,241.91 C439.53,248.03 431.55,244.74 430.75,233.56 C430.61,231.60 430.16,230.00 429.75,230.00 C429.34,230.00 429.00,230.35 429.00,230.77 C429.00,232.45 419.29,242.49 415.09,245.16 C410.26,248.22 406.62,248.70 402.47,246.80 C399.42,245.42 396.00,239.33 396.00,235.30 C396.00,232.70 395.63,232.94 390.00,239.17 C383.90,245.93 375.87,251.00 371.25,251.00 C365.46,251.00 361.11,245.93 359.79,237.64 C359.56,236.18 358.62,236.86 355.51,240.73 C347.99,250.07 338.24,255.54 333.56,253.03 C330.03,251.14 328.00,246.73 327.97,240.85 L 327.94 235.50 L 325.79 238.50 C322.08,243.70 312.65,252.49 308.85,254.28 C298.34,259.23 290.06,254.11 287.45,241.03 L 286.35 235.54 L 284.48 238.52 C278.17,248.56 267.70,257.83 260.73,259.54 C254.34,261.12 249.00,255.87 249.00,248.02 L 249.00 243.93 L 244.37 249.22 C237.25,257.34 229.85,262.00 224.07,262.00 C220.46,262.00 218.85,261.47 217.24,259.75 C214.70,257.04 213.22,253.31 213.48,250.25 C213.58,249.01 213.55,248.00 213.42,248.00 C213.28,248.00 210.32,250.97 206.83,254.60 C199.09,262.67 194.17,265.42 188.75,264.69 C186.60,264.41 184.00,263.40 182.96,262.46 C180.50,260.24 178.69,254.64 179.49,251.77 C179.93,250.22 178.65,251.17 175.44,254.78 C164.12,267.56 151.83,271.31 146.46,263.64 C142.85,258.48 146.11,245.45 154.87,230.04 C161.01,219.24 165.30,209.23 164.59,207.38 C163.15,203.62 154.27,207.17 146.64,214.57 C139.59,221.40 134.17,230.44 126.58,248.00 C122.90,256.52 119.23,264.51 118.42,265.75 ZM 41.36 308.14 C33.22,312.22 24.00,314.35 24.00,312.14 C24.00,311.53 26.63,309.70 29.84,308.08 C47.00,299.42 57.42,285.06 73.81,247.50 C77.65,238.70 83.25,226.32 86.25,220.00 C89.25,213.68 92.76,206.25 94.05,203.50 C99.91,191.01 111.70,173.51 120.82,163.76 L 125.27 159.00 L 121.89 159.01 C116.28,159.02 105.83,160.96 100.23,163.04 C57.94,178.69 36.39,221.08 54.05,253.88 C57.34,259.99 56.99,262.27 53.30,258.83 C50.39,256.12 47.05,249.78 44.42,242.00 C41.55,233.51 41.75,214.90 44.83,205.00 C54.54,173.72 83.68,154.06 120.41,154.01 C130.25,154.00 131.61,153.77 134.41,151.68 C142.26,145.77 149.87,143.00 158.19,143.00 C163.12,143.00 164.49,143.40 166.55,145.45 C173.79,152.70 164.49,159.29 147.56,158.92 C140.53,158.76 138.60,159.05 136.99,160.51 C131.00,165.93 115.06,195.24 91.14,244.82 C73.63,281.09 59.53,299.03 41.36,308.14 ZM 261.00 300.04 C241.46,302.01 184.71,303.45 167.50,302.41 C148.55,301.26 127.01,298.32 113.27,295.02 C101.89,292.28 89.00,287.19 89.00,285.43 C89.00,283.61 90.18,283.63 94.72,285.53 C111.40,292.50 153.08,296.85 191.00,295.58 C247.60,293.69 315.13,285.84 389.50,272.51 C403.23,270.05 423.69,266.63 443.47,263.50 C456.10,261.51 492.67,256.48 504.50,255.12 C509.45,254.56 518.22,253.53 524.00,252.85 C529.78,252.17 545.75,251.59 559.50,251.56 C583.19,251.50 584.75,251.61 589.25,253.69 C593.11,255.47 594.00,256.37 594.00,258.44 C594.00,259.85 593.55,261.00 593.00,261.00 C592.45,261.00 592.00,260.14 592.00,259.10 C592.00,252.47 562.61,252.63 511.00,259.55 C483.59,263.23 449.90,268.96 399.50,278.52 C333.47,291.04 302.55,295.85 261.00,300.04 ZM 307.10 238.36 C308.38,239.25 308.95,239.74 309.59,239.84 C310.24,239.94 310.96,239.64 312.57,238.96 C312.84,238.84 313.14,238.71 313.47,238.58 C318.07,236.65 324.97,230.14 330.89,222.12 C338.41,211.94 342.00,203.02 342.00,194.51 C342.00,187.62 339.74,185.27 334.71,186.93 C323.37,190.67 306.43,215.76 305.24,230.58 C304.79,236.17 304.96,236.86 307.10,238.36 ZM 228.53 172.98 C222.68,176.60 217.00,175.25 217.00,170.25 C217.00,162.12 228.50,154.65 233.43,159.57 C235.38,161.52 235.38,162.01 233.40,166.96 C232.45,169.34 230.48,171.78 228.53,172.98 ZM 443.51 155.56 C439.39,158.70 433.55,158.90 431.97,155.95 C429.63,151.58 435.27,142.97 441.50,141.41 C450.04,139.27 451.48,149.48 443.51,155.56 ZM 298.79 167.40 C295.17,169.77 290.79,170.34 288.59,168.71 C285.61,166.50 287.02,160.34 291.45,156.25 C295.77,152.27 302.20,151.63 304.01,155.01 C305.40,157.62 302.23,165.17 298.79,167.40 ZM 144.21 153.75 C143.62,155.72 159.91,155.45 162.78,153.44 C166.94,150.53 164.45,147.00 158.25,147.00 C154.93,147.00 144.77,151.88 144.21,153.75 Z" fill="#FFFFFF"/>
+        </g>
+      </svg>
+    </div>
+    <div class="login-title">PMax Intelligence</div>
+    <div class="login-sub">Sign in with your Initiative Google account<br>to access the media intelligence dashboard.</div>
+    <button class="g-btn" onclick="startLogin()">
+      <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+      Sign in with Google
+    </button>
+    <div class="login-err" id="loginErr"></div>
+  </div>
+</div>
+
+<div class="loader" id="loader"><div class="spin"></div><div id="loaderMsg">Loading Intelligence…</div></div>
+
+<!-- ── APP ────────────────────────────────────────────────── -->
+<div id="app">
+  <header class="topbar">
+    <div class="topbar-logo">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 618 446" width="110" height="40">
+        <path d="M 118.42 265.75 C117.15,267.70 116.09,268.00 110.48,268.00 C105.72,268.00 104.00,267.64 104.00,266.66 C104.00,264.28 136.95,196.55 138.76,195.21 C139.71,194.49 142.30,194.04 144.50,194.21 C149.00,194.54 149.20,195.22 146.53,201.40 L 144.85 205.29 L 150.68 200.10 C161.61,190.35 172.70,186.73 180.02,190.51 C188.22,194.75 186.81,202.08 172.98,227.03 C167.58,236.78 165.57,241.45 165.23,245.00 C164.83,249.12 165.04,249.88 166.75,250.42 C167.84,250.77 169.85,250.63 171.22,250.11 C177.04,247.89 190.31,228.54 201.65,205.74 C205.95,197.07 210.16,189.80 210.99,189.58 C216.20,188.19 219.80,188.05 220.25,189.23 C220.51,189.93 215.62,201.75 209.38,215.50 C196.75,243.35 195.80,247.24 201.55,247.80 C205.64,248.20 208.90,245.49 216.27,235.57 C221.08,229.09 237.00,199.19 237.00,196.63 C237.00,196.28 235.60,196.00 233.89,196.00 C231.00,196.00 230.83,195.81 231.47,193.25 C232.46,189.30 234.75,187.16 238.35,186.81 C241.38,186.51 241.87,185.75 251.00,167.25 C256.23,156.67 261.17,147.39 262.00,146.63 C264.17,144.63 271.92,143.62 272.55,145.26 C273.02,146.49 270.98,151.56 260.65,174.82 L 256.06 185.14 L 261.78 184.88 C268.56,184.56 269.52,186.04 265.58,190.72 C263.50,193.19 262.08,193.82 257.43,194.30 C254.33,194.62 251.68,195.02 251.55,195.19 C250.20,196.97 232.00,239.41 232.00,240.77 C232.00,243.49 234.00,245.00 237.59,245.00 C240.21,245.00 241.78,243.92 246.30,239.04 C253.72,231.03 261.69,218.63 271.25,200.24 C275.61,191.84 280.01,184.53 281.02,183.99 C282.04,183.44 284.47,183.00 286.43,183.00 C289.08,183.00 290.00,183.43 290.00,184.65 C290.00,186.06 286.20,194.57 269.87,229.66 C266.57,236.74 266.26,240.06 268.75,241.61 C273.64,244.66 278.34,240.62 287.74,225.31 C304.13,198.61 314.30,186.50 325.85,179.90 C336.28,173.95 345.16,175.16 348.63,183.02 L 350.42 187.08 L 352.36 183.29 C353.43,181.20 355.02,178.95 355.90,178.28 C357.72,176.90 365.61,176.56 366.40,177.84 C366.68,178.30 361.77,190.34 355.47,204.59 C349.18,218.84 344.02,231.28 344.01,232.23 C344.01,233.18 345.09,234.67 346.42,235.54 C348.58,236.96 349.16,236.97 351.67,235.65 C356.89,232.93 366.50,218.35 376.15,198.50 C379.36,191.90 381.99,186.16 382.00,185.75 C382.00,185.34 380.95,185.00 379.67,185.00 C376.24,185.00 376.03,184.31 378.13,179.96 C379.74,176.63 380.64,175.92 383.92,175.40 L 387.79 174.78 L 397.13 155.28 C402.26,144.56 407.36,135.16 408.46,134.39 C410.69,132.83 417.58,132.51 418.46,133.93 C418.77,134.44 415.20,143.43 410.51,153.91 C405.83,164.39 402.00,173.25 402.00,173.60 C402.00,173.95 404.43,173.93 407.40,173.56 C413.71,172.77 414.75,173.65 412.53,177.94 C410.54,181.80 408.19,183.00 402.69,183.00 C400.24,183.00 397.82,183.56 397.30,184.25 C395.29,186.90 378.00,226.77 378.00,228.76 C378.00,231.62 380.60,234.00 383.74,234.00 C389.59,234.00 402.37,216.31 415.17,190.50 C419.53,181.70 423.84,173.94 424.74,173.25 C426.40,171.99 435.00,171.47 435.00,172.63 C435.00,173.43 428.71,188.24 419.91,208.14 C416.11,216.74 413.00,224.86 413.00,226.19 C413.00,231.38 417.98,232.57 422.79,228.52 C429.36,222.99 443.96,200.28 454.08,179.83 C458.64,170.60 460.49,169.00 466.55,169.00 C468.88,169.00 470.00,169.47 470.00,170.43 C470.00,171.22 466.02,179.88 461.15,189.68 C449.39,213.36 444.80,223.71 445.18,225.67 C445.36,226.56 446.25,227.76 447.18,228.34 C452.98,232.00 471.28,211.35 481.67,189.40 C485.97,180.33 485.99,180.23 484.44,176.50 C480.53,167.15 488.30,156.61 496.89,159.63 C500.54,160.91 502.41,166.83 501.11,172.93 C499.96,178.32 500.85,179.33 505.97,178.44 C510.75,177.60 514.33,175.64 522.64,169.32 C526.57,166.34 532.08,163.02 534.90,161.95 C549.53,156.39 560.43,163.46 555.26,175.15 C552.26,181.93 547.56,186.58 539.79,190.47 C532.50,194.11 528.98,194.71 524.57,193.02 C520.88,191.62 521.41,190.00 525.54,190.00 C532.74,190.00 540.84,183.42 544.54,174.57 C546.43,170.02 545.14,167.00 541.30,167.00 C530.10,167.00 509.21,194.35 508.19,210.34 C507.84,215.93 508.07,216.97 510.27,219.53 C512.50,222.12 513.34,222.40 518.40,222.28 C529.91,222.02 544.63,211.59 556.02,195.63 C560.60,189.22 561.23,191.95 556.97,199.72 C549.63,213.13 537.39,227.29 527.52,233.79 C513.78,242.86 500.63,241.05 494.89,229.32 C490.17,219.68 492.90,206.56 502.71,191.74 C505.34,187.76 507.63,184.20 507.80,183.84 C507.97,183.48 506.50,183.55 504.53,183.99 C502.56,184.44 500.09,184.58 499.05,184.30 C497.58,183.92 496.64,184.81 494.96,188.15 C483.88,210.19 463.31,235.36 451.02,241.91 C439.53,248.03 431.55,244.74 430.75,233.56 C430.61,231.60 430.16,230.00 429.75,230.00 C429.34,230.00 429.00,230.35 429.00,230.77 C429.00,232.45 419.29,242.49 415.09,245.16 C410.26,248.22 406.62,248.70 402.47,246.80 C399.42,245.42 396.00,239.33 396.00,235.30 C396.00,232.70 395.63,232.94 390.00,239.17 C383.90,245.93 375.87,251.00 371.25,251.00 C365.46,251.00 361.11,245.93 359.79,237.64 C359.56,236.18 358.62,236.86 355.51,240.73 C347.99,250.07 338.24,255.54 333.56,253.03 C330.03,251.14 328.00,246.73 327.97,240.85 L 327.94 235.50 L 325.79 238.50 C322.08,243.70 312.65,252.49 308.85,254.28 C298.34,259.23 290.06,254.11 287.45,241.03 L 286.35 235.54 L 284.48 238.52 C278.17,248.56 267.70,257.83 260.73,259.54 C254.34,261.12 249.00,255.87 249.00,248.02 L 249.00 243.93 L 244.37 249.22 C237.25,257.34 229.85,262.00 224.07,262.00 C220.46,262.00 218.85,261.47 217.24,259.75 C214.70,257.04 213.22,253.31 213.48,250.25 C213.58,249.01 213.55,248.00 213.42,248.00 C213.28,248.00 210.32,250.97 206.83,254.60 C199.09,262.67 194.17,265.42 188.75,264.69 C186.60,264.41 184.00,263.40 182.96,262.46 C180.50,260.24 178.69,254.64 179.49,251.77 C179.93,250.22 178.65,251.17 175.44,254.78 C164.12,267.56 151.83,271.31 146.46,263.64 C142.85,258.48 146.11,245.45 154.87,230.04 C161.01,219.24 165.30,209.23 164.59,207.38 C163.15,203.62 154.27,207.17 146.64,214.57 C139.59,221.40 134.17,230.44 126.58,248.00 C122.90,256.52 119.23,264.51 118.42,265.75 ZM 41.36 308.14 C33.22,312.22 24.00,314.35 24.00,312.14 C24.00,311.53 26.63,309.70 29.84,308.08 C47.00,299.42 57.42,285.06 73.81,247.50 C77.65,238.70 83.25,226.32 86.25,220.00 C89.25,213.68 92.76,206.25 94.05,203.50 C99.91,191.01 111.70,173.51 120.82,163.76 L 125.27 159.00 L 121.89 159.01 C116.28,159.02 105.83,160.96 100.23,163.04 C57.94,178.69 36.39,221.08 54.05,253.88 C57.34,259.99 56.99,262.27 53.30,258.83 C50.39,256.12 47.05,249.78 44.42,242.00 C41.55,233.51 41.75,214.90 44.83,205.00 C54.54,173.72 83.68,154.06 120.41,154.01 C130.25,154.00 131.61,153.77 134.41,151.68 C142.26,145.77 149.87,143.00 158.19,143.00 C163.12,143.00 164.49,143.40 166.55,145.45 C173.79,152.70 164.49,159.29 147.56,158.92 C140.53,158.76 138.60,159.05 136.99,160.51 C131.00,165.93 115.06,195.24 91.14,244.82 C73.63,281.09 59.53,299.03 41.36,308.14 ZM 261.00 300.04 C241.46,302.01 184.71,303.45 167.50,302.41 C148.55,301.26 127.01,298.32 113.27,295.02 C101.89,292.28 89.00,287.19 89.00,285.43 C89.00,283.61 90.18,283.63 94.72,285.53 C111.40,292.50 153.08,296.85 191.00,295.58 C247.60,293.69 315.13,285.84 389.50,272.51 C403.23,270.05 423.69,266.63 443.47,263.50 C456.10,261.51 492.67,256.48 504.50,255.12 C509.45,254.56 518.22,253.53 524.00,252.85 C529.78,252.17 545.75,251.59 559.50,251.56 C583.19,251.50 584.75,251.61 589.25,253.69 C593.11,255.47 594.00,256.37 594.00,258.44 C594.00,259.85 593.55,261.00 593.00,261.00 C592.45,261.00 592.00,260.14 592.00,259.10 C592.00,252.47 562.61,252.63 511.00,259.55 C483.59,263.23 449.90,268.96 399.50,278.52 C333.47,291.04 302.55,295.85 261.00,300.04 ZM 307.10 238.36 C308.38,239.25 308.95,239.74 309.59,239.84 C310.24,239.94 310.96,239.64 312.57,238.96 C312.84,238.84 313.14,238.71 313.47,238.58 C318.07,236.65 324.97,230.14 330.89,222.12 C338.41,211.94 342.00,203.02 342.00,194.51 C342.00,187.62 339.74,185.27 334.71,186.93 C323.37,190.67 306.43,215.76 305.24,230.58 C304.79,236.17 304.96,236.86 307.10,238.36 Z" fill="#FFFFFF"/>
+      </svg>
+    </div>
+    <div class="topbar-div"></div>
+    <div class="topbar-title">PMax Intelligence</div>
+    <div class="topbar-sp"></div>
+    <div class="topbar-ts" id="ts"></div>
+    <button class="t-btn" onclick="loadData()">↻ Refresh</button>
+    <div class="dl-wrap">
+      <button class="t-btn" onclick="toggleDlMenu(event)">⬇ Download ▾</button>
+      <div class="dl-menu" id="dlMenu"></div>
+    </div>
+    <div class="topbar-user" id="uinfo"></div>
+    <button class="t-btn-ghost" onclick="signOut()">Sign Out</button>
+  </header>
+
+  <aside class="sidebar">
+    <div>
+      <div class="slabel">Client</div>
+      <select id="selClient" onchange="onClientChange()"><option value="ALL">All Clients</option></select>
+    </div>
+    <div>
+      <div class="slabel">Campaign</div>
+      <div class="combo" id="campCombo">
+        <input type="text" id="campSearch" class="combo-input" placeholder="All Campaigns"
+               autocomplete="off" role="combobox" aria-expanded="false" aria-controls="campList"
+               onfocus="comboOpen()" oninput="comboFilter()" onkeydown="comboKey(event)">
+        <div class="combo-list" id="campList" role="listbox"></div>
+      </div>
+    </div>
+    <div class="sidebar-div"></div>
+    <div class="zbox">
+      <div class="zn" id="zCount">—</div>
+      <div class="zl">Zombie Products<br>0 clicks · 366 days</div>
+    </div>
+    <div class="sfooter">
+      Source · Google Sheets<br>
+      Scope · <span id="scopeLabel">Last 30 Days</span><br>
+      Type · PMax Only
+    </div>
+  </aside>
+
+  <nav class="main-nav">
+    <div class="nav-tab on"  onclick="nav('overview',this)">Growth Overview</div>
+    <div class="nav-tab"     onclick="nav('charts',this)">Spend Allocation</div>
+    <div class="nav-tab"     onclick="nav('campaigns',this)">Media Orchestration</div>
+    <div class="nav-tab"     onclick="nav('assetgroups',this)">Asset Performance</div>
+    <div class="nav-tab"     onclick="nav('products',this)">Product Intelligence</div>
+  </nav>
+
+  <div class="main-area">
+    <div class="main">
+
+      <!-- GROWTH OVERVIEW -->
+      <div class="page on" id="pg-overview">
+        <div class="fbar" id="fbar">Select client and campaign to filter intelligence.</div>
+        <div class="sec-hdr">Performance Momentum</div>
+        <div class="kpi-row" id="kpiRow"></div>
+        <div class="sec-hdr">Spend Allocation</div>
+        <div class="g4" id="chKpis"></div>
+        <div class="g2">
+          <div class="panel">
+            <div class="ph"><h2 id="trendTitle">30-Day Cost Trend</h2><span class="badge" id="trendBadge">—</span></div>
+            <div class="cw" style="height:160px"><canvas id="trendChart"></canvas></div>
+          </div>
+          <div class="panel">
+            <div class="ph"><h2>Asset Group Strength</h2><span class="badge" id="agBadge">—</span></div>
+            <div class="sg" id="sgrid"></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="ph"><h2>Network Split — Account Total</h2></div>
+          <div class="legend">
+            <span><span class="dot ds"></span>Shopping</span>
+            <span><span class="dot dv"></span>Video</span>
+            <span><span class="dot dd"></span>Display</span>
+            <span><span class="dot dx"></span>Search / Other</span>
+          </div>
+          <div class="g3">
+            <div>
+              <div style="font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--mid-gray);margin-bottom:10px;font-weight:700;">Cost</div>
+              <div class="cw" style="height:170px"><canvas id="pieCost"></canvas></div>
+            </div>
+            <div>
+              <div style="font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--mid-gray);margin-bottom:10px;font-weight:700;">Conversions</div>
+              <div class="cw" style="height:170px"><canvas id="pieConv"></canvas></div>
+            </div>
+            <div>
+              <div style="font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--mid-gray);margin-bottom:10px;font-weight:700;">Conv Value</div>
+              <div class="cw" style="height:170px"><canvas id="pieVal"></canvas></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SPEND ALLOCATION (Charts) -->
+      <div class="page" id="pg-charts">
+        <div class="sec-hdr">Network Cost Split Over Time</div>
+        <div class="panel">
+          <div class="ph"><h2 id="netTitle">Cost % by Channel — 30 Days</h2></div>
+          <div class="legend">
+            <span><span class="dot ds"></span>Shopping</span>
+            <span><span class="dot dv"></span>Video</span>
+            <span><span class="dot dd"></span>Display</span>
+            <span><span class="dot dx"></span>Search</span>
+          </div>
+          <div class="cw" style="height:210px"><canvas id="netLineChart"></canvas></div>
+        </div>
+        <div class="g2">
+          <div class="panel">
+            <div class="ph"><h2>Cost % by Channel per Campaign</h2></div>
+            <div class="cw" style="height:270px"><canvas id="stackPctChart"></canvas></div>
+          </div>
+          <div class="panel">
+            <div class="ph"><h2>Actual Spend by Channel per Campaign</h2></div>
+            <div class="cw" style="height:270px"><canvas id="stackAbsChart"></canvas></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="ph"><h2>Campaign Network Trends — Sparklines</h2></div>
+          <div class="sw" id="sparkTable"></div>
+        </div>
+      </div>
+
+      <!-- MEDIA ORCHESTRATION (Campaigns) -->
+      <div class="page" id="pg-campaigns">
+        <div class="sec-hdr">Campaign Performance</div>
+        <div class="panel">
+          <div class="ph"><h2 id="campTitle">All Campaigns — Last 30 Days</h2><span class="badge">Click headers to sort</span></div>
+          <div class="sw" id="campTable"></div>
+        </div>
+      </div>
+
+      <!-- ASSET PERFORMANCE -->
+      <div class="page" id="pg-assetgroups">
+        <div class="sec-hdr">Asset Group Intelligence</div>
+        <div class="panel">
+          <div class="tbar">
+            <div class="itab on" onclick="itab('ag-sum',this)">Summary</div>
+            <div class="itab" onclick="itab('ag-impr',this)">Impressions by Date</div>
+            <div class="itab" onclick="itab('ag-cost',this)">Cost by Date</div>
+            <div class="itab" onclick="itab('ag-val',this)">Value by Date</div>
+          </div>
+          <div class="tpane on" id="tp-ag-sum"><div class="sw" id="agSumTable"></div></div>
+          <div class="tpane" id="tp-ag-impr"><div class="sw" id="agImprTable"></div></div>
+          <div class="tpane" id="tp-ag-cost"><div class="sw" id="agCostTable"></div></div>
+          <div class="tpane" id="tp-ag-val"><div class="sw" id="agValTable"></div></div>
+        </div>
+      </div>
+
+      <!-- PRODUCT INTELLIGENCE -->
+      <div class="page" id="pg-products">
+        <div class="sec-hdr">Product Intelligence</div>
+        <div class="panel">
+          <div class="tbar">
+            <div class="itab on" onclick="itab('pr-cost',this)">Top by Cost</div>
+            <div class="itab" onclick="itab('pr-roas',this)">Top by ROAS</div>
+            <div class="itab" onclick="itab('pr-conv',this)">Top by Conversions</div>
+            <div class="itab" onclick="itab('pr-wasted',this)">Wasted Spend</div>
+          </div>
+          <div class="tpane on" id="tp-pr-cost"><div class="sw" id="ptCost"></div></div>
+          <div class="tpane" id="tp-pr-roas"><div class="sw" id="ptRoas"></div></div>
+          <div class="tpane" id="tp-pr-conv"><div class="sw" id="ptConv"></div></div>
+          <div class="tpane" id="tp-pr-wasted"><div class="sw" id="ptWasted"></div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+const CLIENT_ID='525596564772-6uglraensi4slajm7nl96umvbkoe6el6.apps.googleusercontent.com';
+const SHEET_ID='1pADqa7-Shz0H1lUyQ8658TfN4sA6f_3ymn-BY3G5JLg';
+const SCOPES='https://www.googleapis.com/auth/spreadsheets.readonly';
+const ALLOWED_DOMAINS=[];
+const ALLOWED_EMAILS=[]; // access controlled by Google Sheet sharing + OAuth consent test users
+const CH={shop:'#2F6BFF',video:'#E53935',display:'#FFB000',search:'#00A676'};
+const CHART_DEFAULTS={color:'#777777',grid:'#E6E6E2',font:{family:'Poppins,sans-serif',size:10}};
+
+let token=null,raw={},DL={},charts={};
+let campValue='ALL',campLabel='All Campaigns',campOptions=[],campHi=-1;
+let WIN_DAYS=30;
+
+// ── AUTH ─────────────────────────────────────────────────────
+// The OAuth access token is kept in sessionStorage so a browser refresh
+// reuses it instead of bouncing back to the login screen. When it has
+// expired (Google tokens last ~1h) we silently re-acquire one using the
+// existing Google session (prompt:'none') — no login screen, no clicks.
+const TOK_KEY='pmax_tok';            // sessionStorage: {token,expiry,user}
+const SEEN_KEY='pmax_signed_in';     // localStorage flag: user has authed before
+let tokenClient=null,tokenExpiry=0,appReady=false,silentMode=false;
+
+function initGis(){
+  if(tokenClient)return tokenClient;
+  tokenClient=google.accounts.oauth2.initTokenClient({
+    client_id:CLIENT_ID,scope:SCOPES,callback:onToken,error_callback:onTokenError
+  });
+  return tokenClient;
+}
+// Interactive sign-in from the login button
+function startLogin(){silentMode=false;initGis().requestAccessToken();}
+
+function onToken(resp){
+  if(resp.error){
+    if(silentMode){silentMode=false;showLogin();return;}
+    loginErr('Login failed: '+resp.error);return;
+  }
+  token=resp.access_token;
+  tokenExpiry=Date.now()+((parseInt(resp.expires_in,10)||3600)*1000);
+  silentMode=false;
+  if(appReady){saveTokenOnly();loadData();return;}     // silent renew while running
+  fetch('https://www.googleapis.com/oauth2/v3/userinfo',{headers:{Authorization:'Bearer '+token}})
+    .then(r=>r.json()).then(u=>{
+      if(!allowed(u.email)){token=null;clearSession();loginErr('Access denied: '+u.email);return;}
+      saveSession(u);enterApp(u);
+    }).catch(e=>loginErr('Cannot verify: '+e.message));
+}
+function onTokenError(){ if(silentMode){silentMode=false;showLogin();} }
+
+function enterApp(u){
+  appReady=true;
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('app').classList.add('on');
+  document.getElementById('uinfo').innerHTML=(u.picture?`<img src="${u.picture}" alt="">`:'')+'<span>'+esc(u.name||u.email)+'</span>';
+  loadData();
+}
+function showLogin(){
+  appReady=false;
+  document.getElementById('app').classList.remove('on');
+  document.getElementById('loginScreen').style.display='flex';
+}
+function allowed(email){
+  if(!ALLOWED_DOMAINS.length&&!ALLOWED_EMAILS.length)return true;
+  return ALLOWED_DOMAINS.includes(email.split('@')[1])||ALLOWED_EMAILS.includes(email);
+}
+function signOut(){
+  clearSession();
+  if(token){try{google.accounts.oauth2.revoke(token,()=>{});}catch(e){}}
+  token=null;location.reload();
+}
+function loginErr(m){document.getElementById('loginErr').textContent=m;}
+
+// ── Session persistence ──────────────────────────────────────
+function saveSession(u){
+  try{
+    sessionStorage.setItem(TOK_KEY,JSON.stringify({token,expiry:tokenExpiry,
+      user:{name:u.name,email:u.email,picture:u.picture}}));
+    localStorage.setItem(SEEN_KEY,'1');
+  }catch(e){}
+}
+function saveTokenOnly(){
+  try{
+    const s=JSON.parse(sessionStorage.getItem(TOK_KEY)||'null')||{};
+    s.token=token;s.expiry=tokenExpiry;
+    sessionStorage.setItem(TOK_KEY,JSON.stringify(s));
+  }catch(e){}
+}
+function loadStoredSession(){
+  try{
+    const s=JSON.parse(sessionStorage.getItem(TOK_KEY)||'null');
+    if(s&&s.token&&s.expiry>Date.now()+60000)return s; // 60s safety buffer
+  }catch(e){}
+  return null;
+}
+function clearSession(){try{sessionStorage.removeItem(TOK_KEY);localStorage.removeItem(SEEN_KEY);}catch(e){}}
+
+// Ask for a fresh token silently (no UI); returns false if not possible
+function renewSilently(){
+  if(localStorage.getItem(SEEN_KEY)!=='1')return false;
+  silentMode=true;initGis().requestAccessToken({prompt:'none'});return true;
+}
+
+// ── Boot: restore session on page load, no login screen on refresh ──
+function bootAuth(){
+  if(!(window.google&&google.accounts&&google.accounts.oauth2)){return setTimeout(bootAuth,80);}
+  initGis();
+  const saved=loadStoredSession();
+  if(saved){token=saved.token;tokenExpiry=saved.expiry;enterApp(saved.user||{});return;}
+  if(!renewSilently())showLogin();   // not signed in before → show login
+}
+bootAuth();
+
+// ── DATA LOAD ─────────────────────────────────────────────────
+async function loadData(){
+  if(!token)return;
+  // Token expired/expiring → renew silently; onToken will re-call loadData
+  if(tokenExpiry&&Date.now()>tokenExpiry-60000){if(renewSilently())return;}
+  showLoader('Loading intelligence…');
+  try{
+    const tabs=['r_camp','r_dv','r_prod_t','r_ag','r_allads','zombies'];
+    const results=await Promise.all(tabs.map(fetchSheet));
+    tabs.forEach((t,i)=>{raw[t]=parseSheet(results[i]);});
+    buildDL();
+    const ad=DL.allDates||[];
+    WIN_DAYS=ad.length?Math.round((new Date(ad[ad.length-1])-new Date(ad[0]))/864e5)+1:30;
+    updateScopeLabels();
+    populateFilters();populateCampaigns();renderAll();
+    document.getElementById('ts').textContent='Updated '+new Date().toLocaleTimeString();
+  }catch(e){
+    // Stored token revoked/expired mid-session → try a silent renew once
+    if(/\b401\b/.test(e.message)&&renewSilently()){hideLoader();return;}
+    alert('Error: '+e.message);console.error(e);
+  }
+  finally{hideLoader();}
+}
+async function fetchSheet(tab){
+  const url=`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(tab)}?majorDimension=ROWS`;
+  const r=await fetch(url,{headers:{Authorization:'Bearer '+token}});
+  if(!r.ok)throw new Error(`Sheets API ${r.status} on ${tab}`);
+  return(await r.json()).values||[];
+}
+function parseSheet(rows){if(!rows.length)return{h:[],r:[]};return{h:rows[0],r:rows.slice(1)};}
+
+// ── DERIVED LAYER ─────────────────────────────────────────────
+function buildDL(){
+  // Asset type map
+  const aMp={};
+  const ah=raw.r_allads.h;
+  raw.r_allads.r.forEach(r=>{
+    const t=(r[c(ah,'asset.type')]||'').toUpperCase();
+    let ch='search';
+    if(['YOUTUBE_VIDEO'].includes(t)) ch='video';
+    else if(['IMAGE','MEDIA_BUNDLE'].includes(t)) ch='display';
+    else if(['SHOPPING_PRODUCT','BOOK_ON_GOOGLE_IMAGE','CALL_TO_ACTION_SELECTION'].includes(t)) ch='shop';
+    aMp[r[c(ah,'asset.resource_name')]]=ch;
+  });
+
+  // dv_m: join r_dv with asset map → shop/video/display cost per camp+date
+  const dvH=raw.r_dv.h;
+  const dvMap={};
+  raw.r_dv.r.forEach(r=>{
+    const ch=aMp[r[c(dvH,'segments.asset_interaction_target.asset')]]||'search';
+    const cost=n(r[c(dvH,'metrics.cost_micros')])/1e6;
+    const conv=n(r[c(dvH,'metrics.conversions')]);
+    const val=n(r[c(dvH,'metrics.conversions_value')]);
+    const acc=r[c(dvH,'account_name')]||'';
+    const key=acc+'||'+r[c(dvH,'campaign.name')]+'||'+r[c(dvH,'segments.date')];
+    if(!dvMap[key])dvMap[key]={acc,camp:r[c(dvH,'campaign.name')],date:r[c(dvH,'segments.date')],shop:0,video:0,display:0,shopConv:0,videoConv:0,displayConv:0,shopVal:0,videoVal:0,displayVal:0};
+    dvMap[key][ch]+=cost;dvMap[key][ch+'Conv']+=conv;dvMap[key][ch+'Val']+=val;
+  });
+
+  // c_d: merge r_camp totals + dv_m channel split, search = remainder
+  const cH=raw.r_camp.h;
+  const cdMap={};
+  raw.r_camp.r.forEach(r=>{
+    const acc=r[c(cH,'account_name')]||'';
+    const key=acc+'||'+r[c(cH,'campaign.name')]+'||'+r[c(cH,'segments.date')];
+    if(!cdMap[key])cdMap[key]={acc,camp:r[c(cH,'campaign.name')],date:r[c(cH,'segments.date')],cost:0,conv:0,val:0,impr:0,clicks:0};
+    cdMap[key].cost+=n(r[c(cH,'metrics.cost_micros')])/1e6;
+    cdMap[key].conv+=n(r[c(cH,'metrics.conversions')]);
+    cdMap[key].val+=n(r[c(cH,'metrics.conversions_value')]);
+    cdMap[key].impr+=n(r[c(cH,'metrics.impressions')]);
+    cdMap[key].clicks+=n(r[c(cH,'metrics.clicks')]);
+  });
+  const cd=[];
+  Object.keys(cdMap).forEach(key=>{
+    const e=cdMap[key];
+    const dv=dvMap[key]||{shop:0,video:0,display:0,shopConv:0,videoConv:0,displayConv:0,shopVal:0,videoVal:0,displayVal:0};
+    cd.push({
+      acc:e.acc,camp:e.camp,date:e.date,
+      cost:e.cost,conv:e.conv,val:e.val,impr:e.impr,clicks:e.clicks,
+      shop:dv.shop,video:dv.video,display:dv.display,
+      search:Math.max(0,e.cost-dv.shop-dv.video-dv.display),
+      shopConv:dv.shopConv,videoConv:dv.videoConv,displayConv:dv.displayConv,
+      searchConv:Math.max(0,e.conv-dv.shopConv-dv.videoConv-dv.displayConv),
+      shopVal:dv.shopVal,videoVal:dv.videoVal,displayVal:dv.displayVal,
+      searchVal:Math.max(0,e.val-dv.shopVal-dv.videoVal-dv.displayVal)
+    });
+  });
+  cd.sort((a,b)=>a.date<b.date?-1:1);
+  DL.cd=cd;
+
+  // totals
+  const totMap={};
+  cd.forEach(r=>{
+    const key=r.acc+'||'+r.camp;
+    if(!totMap[key])totMap[key]={acc:r.acc,camp:r.camp,cost:0,conv:0,val:0,impr:0,clicks:0,shop:0,video:0,display:0,search:0,shopConv:0,videoConv:0,displayConv:0,searchConv:0,shopVal:0,videoVal:0,displayVal:0,searchVal:0};
+    const t=totMap[key];
+    t.cost+=r.cost;t.conv+=r.conv;t.val+=r.val;t.impr+=r.impr;t.clicks+=r.clicks;
+    t.shop+=r.shop;t.video+=r.video;t.display+=r.display;t.search+=r.search;
+    t.shopConv+=r.shopConv;t.videoConv+=r.videoConv;t.displayConv+=r.displayConv;t.searchConv+=r.searchConv;
+    t.shopVal+=r.shopVal;t.videoVal+=r.videoVal;t.displayVal+=r.displayVal;t.searchVal+=r.searchVal;
+  });
+  DL.totals=Object.values(totMap);
+
+  // sk_p
+  const allDates=[...new Set(cd.map(r=>r.date))].sort();
+  const skMap={};
+  cd.forEach(r=>{
+    const key=r.acc+'||'+r.camp;
+    if(!skMap[key])skMap[key]={acc:r.acc,camp:r.camp,shop:[],video:[],display:[],search:[]};
+    const i=allDates.indexOf(r.date);
+    const sk=skMap[key];
+    while(sk.shop.length<=i){sk.shop.push(0);sk.video.push(0);sk.display.push(0);sk.search.push(0);}
+    sk.shop[i]+=r.shop;sk.video[i]+=r.video;sk.display[i]+=r.display;sk.search[i]+=r.search;
+  });
+  DL.skp=Object.values(skMap);DL.allDates=allDates;
+
+  // ag_m_p
+  const agH=raw.r_ag.h;
+  const agMap={};
+  raw.r_ag.r.forEach(r=>{
+    const key=(r[c(agH,'account_name')]||'')+'||'+r[c(agH,'campaign.name')]+'||'+(r[c(agH,'asset_group.name')]||'')+'||'+r[c(agH,'segments.date')];
+    if(!agMap[key])agMap[key]={acc:r[c(agH,'account_name')]||'',camp:r[c(agH,'campaign.name')],ag:r[c(agH,'asset_group.name')]||'',str:r[c(agH,'asset_group.ad_strength')]||'',stat:r[c(agH,'asset_group.status')]||'',date:r[c(agH,'segments.date')],impr:0,clicks:0,cost:0,conv:0,val:0};
+    const e=agMap[key];
+    e.impr+=n(r[c(agH,'metrics.impressions')]);e.clicks+=n(r[c(agH,'metrics.clicks')]);
+    e.cost+=n(r[c(agH,'metrics.cost_micros')])/1e6;e.conv+=n(r[c(agH,'metrics.conversions')]);e.val+=n(r[c(agH,'metrics.conversions_value')]);
+  });
+  DL.agm=Object.values(agMap).sort((a,b)=>a.date<b.date?-1:1);
+
+  // top_p
+  const pH=raw.r_prod_t.h;
+  const prodMap={};
+  raw.r_prod_t.r.forEach(r=>{
+    const key=r[c(pH,'segments.product_item_id')]||r[c(pH,'segments.product_title')];
+    if(!prodMap[key])prodMap[key]={title:r[c(pH,'segments.product_title')],id:r[c(pH,'segments.product_item_id')],acc:r[c(pH,'account_name')]||'',camp:r[c(pH,'campaign.name')],cost:0,impr:0,conv:0,val:0};
+    prodMap[key].cost+=n(r[c(pH,'metrics.cost_micros')])/1e6;
+    prodMap[key].impr+=n(r[c(pH,'metrics.impressions')]);
+    prodMap[key].conv+=n(r[c(pH,'metrics.conversions')]);
+    prodMap[key].val+=n(r[c(pH,'metrics.conversions_value')]);
+  });
+  DL.topp=Object.values(prodMap).map(p=>({...p,roas:p.cost>0?p.val/p.cost:0,cpa:p.conv>0?p.cost/p.conv:0}));
+}
+
+// ── FILTERS ───────────────────────────────────────────────────
+function populateFilters(){
+  const clients=[...new Set(DL.cd.map(r=>r.acc))].filter(Boolean).sort();
+  const sel=document.getElementById('selClient');const cur=sel.value;
+  sel.innerHTML=`<option value="ALL">All Clients (${clients.length})</option>`+clients.map(c=>`<option value="${esc(c)}"${c===cur?' selected':''}>${esc(c)}</option>`).join('');
+}
+function onClientChange(){populateCampaigns();renderAll();}
+
+// Rebuild the campaign option list for the current client, reset to "All".
+function populateCampaigns(){
+  const cl=document.getElementById('selClient').value;
+  campOptions=[...new Set(DL.cd.filter(r=>cl==='ALL'||r.acc===cl).map(r=>r.camp))].filter(Boolean).sort();
+  campValue='ALL';campLabel='All Campaigns ('+campOptions.length+')';campHi=-1;
+  const inp=document.getElementById('campSearch');
+  inp.value='';inp.placeholder=campLabel;
+  renderCampList('');
+}
+
+// ── SEARCHABLE COMBO ──────────────────────────────────────────
+function renderCampList(q){
+  q=(q||'').toLowerCase();
+  const opts=['ALL'].concat(campOptions);
+  const items=opts.filter(o=>o==='ALL'?'all campaigns'.includes(q):o.toLowerCase().includes(q));
+  campHi=-1;
+  const labelOf=o=>o==='ALL'?'All Campaigns ('+campOptions.length+')':o;
+  document.getElementById('campList').innerHTML=items.length
+    ?items.map(o=>`<div class="combo-opt${o===campValue?' on':''}" role="option" data-val="${esc(o)}" title="${esc(labelOf(o))}" onmousedown="comboSelect(this.getAttribute('data-val'))">${esc(labelOf(o))}</div>`).join('')
+    :'<div class="combo-empty">No matches</div>';
+}
+function comboOpen(){document.getElementById('campCombo').classList.add('open');document.getElementById('campSearch').setAttribute('aria-expanded','true');renderCampList(document.getElementById('campSearch').value);}
+function comboClose(){document.getElementById('campCombo').classList.remove('open');document.getElementById('campSearch').setAttribute('aria-expanded','false');campHi=-1;}
+function comboFilter(){comboOpen();}
+function comboSelect(val){
+  campValue=val;campLabel=val==='ALL'?'All Campaigns ('+campOptions.length+')':val;
+  const inp=document.getElementById('campSearch');
+  inp.value=val==='ALL'?'':val;inp.placeholder=val==='ALL'?campLabel:'';
+  comboClose();renderAll();
+}
+function comboKey(e){
+  const list=document.getElementById('campList');
+  const opts=[...list.querySelectorAll('.combo-opt')];
+  if(e.key==='Escape'){comboClose();return;}
+  if(e.key==='Enter'){e.preventDefault();const t=campHi>=0?opts[campHi]:opts[0];if(t)comboSelect(t.getAttribute('data-val'));return;}
+  if(e.key==='ArrowDown'||e.key==='ArrowUp'){
+    e.preventDefault();
+    if(!document.getElementById('campCombo').classList.contains('open')){comboOpen();return;}
+    if(!opts.length)return;
+    campHi=e.key==='ArrowDown'?Math.min(campHi+1,opts.length-1):Math.max(campHi-1,0);
+    opts.forEach((o,i)=>o.classList.toggle('hi',i===campHi));
+    opts[campHi].scrollIntoView({block:'nearest'});
+  }
+}
+document.addEventListener('mousedown',function(e){const c=document.getElementById('campCombo');if(c&&!c.contains(e.target))comboClose();});
+
+function getF(){return{cl:document.getElementById('selClient').value,cp:campValue};}
+function fcd(f){return DL.cd.filter(r=>(f.cl==='ALL'||r.acc===f.cl)&&(f.cp==='ALL'||r.camp===f.cp));}
+function ftot(f){return DL.totals.filter(r=>(f.cl==='ALL'||r.acc===f.cl)&&(f.cp==='ALL'||r.camp===f.cp));}
+function fagm(f){return DL.agm.filter(r=>(f.cl==='ALL'||r.acc===f.cl)&&(f.cp==='ALL'||r.camp===f.cp));}
+function fskp(f){return DL.skp.filter(r=>(f.cl==='ALL'||r.acc===f.cl)&&(f.cp==='ALL'||r.camp===f.cp));}
+function fprod(f){return DL.topp.filter(r=>(f.cl==='ALL'||r.acc===f.cl)&&(f.cp==='ALL'||r.camp===f.cp));}
+
+// ── RENDER ALL ─────────────────────────────────────────────────
+function renderAll(){
+  const f=getF();
+  const cs=document.getElementById('selClient');
+  document.getElementById('fbar').innerHTML=`Showing · <strong>${esc(cs.options[cs.selectedIndex].text)}</strong> · <strong>${esc(campLabel)}</strong> · Last ${WIN_DAYS} days · PMax`;
+  renderOverview(f);renderCharts(f);renderCampaigns(f);renderAG(f);renderProducts(f);renderZombies(f);
+}
+
+// Set the window-length labels from the actual data span (WIN_DAYS)
+function updateScopeLabels(){
+  const sl=document.getElementById('scopeLabel'); if(sl)sl.textContent='Last '+WIN_DAYS+' Days';
+  const tt=document.getElementById('trendTitle'); if(tt)tt.textContent=WIN_DAYS+'-Day Cost Trend';
+  const nt=document.getElementById('netTitle');   if(nt)nt.textContent='Cost % by Channel — '+WIN_DAYS+' Days';
+  const ct=document.getElementById('campTitle');  if(ct)ct.textContent='All Campaigns — Last '+WIN_DAYS+' Days';
+}
+
+// ── Chart helpers ─────────────────────────────────────────────
+const axOpts={ticks:{color:'#777',font:{size:9,family:'Poppins,sans-serif'}},grid:{color:'#E6E6E2'}};
+const axOptsDark={ticks:{color:'#777',font:{size:9,family:'Poppins,sans-serif'}},grid:{color:'#E6E6E2'}};
+const legendOpts={labels:{color:'#777',font:{size:10,family:'Poppins,sans-serif'},boxWidth:10,padding:14}};
+
+// ── OVERVIEW ──────────────────────────────────────────────────
+function renderOverview(f){
+  const rows=fcd(f);
+  let cost=0,conv=0,val=0,impr=0,clicks=0,shop=0,video=0,display=0,search=0;
+  let shopConv=0,videoConv=0,dispConv=0,srchConv=0,shopVal=0,videoVal=0,dispVal=0,srchVal=0;
+  rows.forEach(r=>{
+    cost+=r.cost;conv+=r.conv;val+=r.val;impr+=r.impr;clicks+=r.clicks;
+    shop+=r.shop;video+=r.video;display+=r.display;search+=r.search;
+    shopConv+=r.shopConv;videoConv+=r.videoConv;dispConv+=r.displayConv;srchConv+=r.searchConv;
+    shopVal+=r.shopVal;videoVal+=r.videoVal;dispVal+=r.displayVal;srchVal+=r.searchVal;
+  });
+  const roas=cost>0?val/cost:0;const ctr=impr>0?clicks/impr*100:0;
+
+  document.getElementById('kpiRow').innerHTML=[
+    {l:'Total Cost',v:'$'+fmt(cost),s:fb(impr)+' Impressions',kc:'var(--black)'},
+    {l:'Conv Value',v:'$'+fmt(val),s:fmt(conv)+' Conversions',kc:'var(--growth)'},
+    {l:'ROAS',v:roas.toFixed(2)+'x',s:'Return on Ad Spend',kc:roas>=3?'var(--growth)':roas>=2?'var(--attention)':'var(--risk)'},
+    {l:'Clicks',v:fb(clicks),s:ctr.toFixed(2)+'% CTR',kc:'var(--info)'},
+  ].map(k=>`<div class="kpi" style="--kc:${k.kc}"><div class="kl">${k.l}</div><div class="kv">${k.v}</div><div class="ks">${k.s}</div></div>`).join('');
+
+  const tc=shop+video+display+search||1;
+  document.getElementById('chKpis').innerHTML=[
+    {l:'<span class="dot ds"></span>Shopping',v:'$'+fmt(shop),s:(shop/tc*100).toFixed(1)+'% of spend',kc:'var(--shop)'},
+    {l:'<span class="dot dv"></span>Video',v:'$'+fmt(video),s:(video/tc*100).toFixed(1)+'% of spend',kc:'var(--video)'},
+    {l:'<span class="dot dd"></span>Display',v:'$'+fmt(display),s:(display/tc*100).toFixed(1)+'% of spend',kc:'var(--display)'},
+    {l:'<span class="dot dx"></span>Search',v:'$'+fmt(search),s:(search/tc*100).toFixed(1)+'% of spend',kc:'var(--search)'},
+  ].map(k=>`<div class="kpi" style="--kc:${k.kc}"><div class="kl">${k.l}</div><div class="kv">${k.v}</div><div class="ks">${k.s}</div></div>`).join('');
+
+  const byD={};rows.forEach(r=>{if(!byD[r.date])byD[r.date]=0;byD[r.date]+=r.cost;});
+  const dates=Object.keys(byD).sort();
+  document.getElementById('trendBadge').textContent=dates.length+' days';
+  dc('trendChart');charts.trendChart=new Chart(document.getElementById('trendChart'),{
+    type:'bar',
+    data:{labels:dates.map(d=>d.slice(5)),datasets:[{data:dates.map(d=>byD[d]),backgroundColor:'#00000015',borderColor:'#000000',borderWidth:1,borderRadius:0}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{...axOpts},y:{...axOpts,ticks:{...axOpts.ticks,callback:v=>'$'+fb(v)}}}}
+  });
+
+  const agRows=fagm(f);const seen=new Set();const strengths=[];
+  agRows.forEach(r=>{const k=r.camp+'||'+r.ag;if(!seen.has(k)){seen.add(k);strengths.push(r.str);}});
+  const sc={EXCELLENT:0,GOOD:0,POOR:0,PENDING:0,OTHER:0};
+  strengths.forEach(s=>{if(s==='EXCELLENT')sc.EXCELLENT++;else if(s==='GOOD')sc.GOOD++;else if(s==='POOR')sc.POOR++;else if(s==='PENDING'||s==='LEARNING')sc.PENDING++;else sc.OTHER++;});
+  document.getElementById('agBadge').textContent=strengths.length+' groups';
+  document.getElementById('sgrid').innerHTML=
+    scell('Excellent',sc.EXCELLENT,'se')+scell('Good',sc.GOOD,'sg-g')+scell('Poor',sc.POOR,'sp')+scell('Pending',sc.PENDING,'sn-p')+scell('Other',sc.OTHER,'so');
+
+  const pc=[CH.shop+'cc',CH.video+'cc',CH.display+'cc',CH.search+'cc'];
+  const pl=['Shopping','Video','Display','Search'];
+  const po={responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'#777',font:{size:10,family:'Poppins,sans-serif'},boxWidth:10,padding:10}}}};
+  dc('pieCost');dc('pieConv');dc('pieVal');
+  charts.pieCost=new Chart(document.getElementById('pieCost'),{type:'doughnut',data:{labels:pl,datasets:[{data:[shop,video,display,search],backgroundColor:pc,borderWidth:2,borderColor:'#F5F5F2'}]},options:po});
+  charts.pieConv=new Chart(document.getElementById('pieConv'),{type:'doughnut',data:{labels:pl,datasets:[{data:[shopConv,videoConv,dispConv,srchConv],backgroundColor:pc,borderWidth:2,borderColor:'#F5F5F2'}]},options:po});
+  charts.pieVal=new Chart(document.getElementById('pieVal'),{type:'doughnut',data:{labels:pl,datasets:[{data:[shopVal,videoVal,dispVal,srchVal],backgroundColor:pc,borderWidth:2,borderColor:'#F5F5F2'}]},options:po});
+}
+
+// ── CHARTS ────────────────────────────────────────────────────
+function renderCharts(f){
+  const rows=fcd(f);
+  const byD={};
+  rows.forEach(r=>{
+    if(!byD[r.date])byD[r.date]={shop:0,video:0,display:0,search:0,total:0};
+    byD[r.date].shop+=r.shop;byD[r.date].video+=r.video;byD[r.date].display+=r.display;byD[r.date].search+=r.search;byD[r.date].total+=r.cost;
+  });
+  const dates=Object.keys(byD).sort();
+
+  dc('netLineChart');
+  charts.netLineChart=new Chart(document.getElementById('netLineChart'),{
+    type:'line',
+    data:{labels:dates.map(d=>d.slice(5)),datasets:[
+      {label:'Shopping',data:dates.map(d=>byD[d].total>0?byD[d].shop/byD[d].total*100:0),borderColor:CH.shop,fill:false,tension:.3,pointRadius:2,borderWidth:2},
+      {label:'Video',data:dates.map(d=>byD[d].total>0?byD[d].video/byD[d].total*100:0),borderColor:CH.video,fill:false,tension:.3,pointRadius:2,borderWidth:2},
+      {label:'Display',data:dates.map(d=>byD[d].total>0?byD[d].display/byD[d].total*100:0),borderColor:CH.display,fill:false,tension:.3,pointRadius:2,borderWidth:2},
+      {label:'Search',data:dates.map(d=>byD[d].total>0?byD[d].search/byD[d].total*100:0),borderColor:CH.search,fill:false,tension:.3,pointRadius:2,borderWidth:2},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:legendOpts},scales:{x:axOpts,y:{...axOpts,min:0,max:100,ticks:{...axOpts.ticks,callback:v=>v+'%'}}}}
+  });
+
+  const tots=ftot(f);
+  const campKeys=[...new Set(tots.map(t=>t.camp))].sort();
+  const campLabels=campKeys.map(c=>trunc(c,24));
+  const cbk={};tots.forEach(t=>{if(!cbk[t.camp])cbk[t.camp]={shop:0,video:0,display:0,search:0};cbk[t.camp].shop+=t.shop;cbk[t.camp].video+=t.video;cbk[t.camp].display+=t.display;cbk[t.camp].search+=t.search;});
+  const barBase=(stacked,pct)=>({responsive:true,maintainAspectRatio:false,plugins:{legend:legendOpts},scales:{x:{stacked,ticks:{color:'#777',font:{size:8}},grid:{color:'#E6E6E2'}},y:{stacked,ticks:{color:'#777',font:{size:9},callback:v=>pct?v.toFixed(0)+'%':'$'+fb(v)},grid:{color:'#E6E6E2'}}}});
+
+  dc('stackPctChart');
+  charts.stackPctChart=new Chart(document.getElementById('stackPctChart'),{
+    type:'bar',data:{labels:campLabels,datasets:[
+      {label:'Shopping',data:campKeys.map(k=>{const t=cbk[k];const s=t.shop+t.video+t.display+t.search||1;return t.shop/s*100;}),backgroundColor:CH.shop+'bb'},
+      {label:'Video',data:campKeys.map(k=>{const t=cbk[k];const s=t.shop+t.video+t.display+t.search||1;return t.video/s*100;}),backgroundColor:CH.video+'bb'},
+      {label:'Display',data:campKeys.map(k=>{const t=cbk[k];const s=t.shop+t.video+t.display+t.search||1;return t.display/s*100;}),backgroundColor:CH.display+'bb'},
+      {label:'Search',data:campKeys.map(k=>{const t=cbk[k];const s=t.shop+t.video+t.display+t.search||1;return t.search/s*100;}),backgroundColor:CH.search+'bb'},
+    ]},options:barBase(true,true)
+  });
+  dc('stackAbsChart');
+  charts.stackAbsChart=new Chart(document.getElementById('stackAbsChart'),{
+    type:'bar',data:{labels:campLabels,datasets:[
+      {label:'Shopping',data:campKeys.map(k=>cbk[k].shop),backgroundColor:CH.shop+'bb'},
+      {label:'Video',data:campKeys.map(k=>cbk[k].video),backgroundColor:CH.video+'bb'},
+      {label:'Display',data:campKeys.map(k=>cbk[k].display),backgroundColor:CH.display+'bb'},
+      {label:'Search',data:campKeys.map(k=>cbk[k].search),backgroundColor:CH.search+'bb'},
+    ]},options:barBase(true,false)
+  });
+
+  const skRows=fskp(f);
+  document.getElementById('sparkTable').innerHTML=skRows.length?`<table><thead><tr>
+    <th>Campaign</th>
+    <th><span class="dot ds"></span>Shopping</th>
+    <th><span class="dot dv"></span>Video</th>
+    <th><span class="dot dd"></span>Display</th>
+    <th><span class="dot dx"></span>Search / Other</span></th>
+  </tr></thead><tbody>`+
+  skRows.sort((a,b)=>a.camp<b.camp?-1:1).map(r=>`<tr>
+    <td title="${esc(r.camp)}">${esc(trunc(r.camp,44))}</td>
+    <td>${spark(r.shop,CH.shop)}</td><td>${spark(r.video,CH.video)}</td>
+    <td>${spark(r.display,CH.display)}</td><td>${spark(r.search,CH.search)}</td>
+  </tr>`).join('')+'</tbody></table>'
+  :'<div class="empty">No data available.</div>';
+}
+
+// ── CAMPAIGNS ─────────────────────────────────────────────────
+function renderCampaigns(f){
+  const tots=ftot(f).sort((a,b)=>b.cost-a.cost);
+  if(!tots.length){document.getElementById('campTable').innerHTML='<div class="empty">No campaign data.</div>';return;}
+  const skMap={};fskp(f).forEach(r=>{skMap[r.acc+'||'+r.camp]=r;});
+  document.getElementById('campTable').innerHTML=`<table><thead><tr>
+    <th>Campaign</th>
+    <th class="tr">Cost</th><th class="tr">Conv</th><th class="tr">Value</th><th class="tr">ROAS</th>
+    <th class="tr">Impr</th><th class="tr">Clicks</th><th class="tr">CTR</th>
+    <th><span class="dot ds"></span>Shop $</th><th class="tr">%</th><th class="tr">ROAS</th>
+    <th><span class="dot dv"></span>Video $</th><th class="tr">%</th><th class="tr">ROAS</th>
+    <th><span class="dot dd"></span>Display $</th><th class="tr">%</th><th class="tr">ROAS</th>
+    <th><span class="dot dx"></span>Search $</th><th class="tr">%</th><th class="tr">ROAS</th>
+    <th>Shop</th><th>Video</th><th>Display</th><th>Search</th>
+  </tr></thead><tbody>`+
+  tots.map(t=>{
+    const roas=t.cost>0?t.val/t.cost:0;const ctr=t.impr>0?t.clicks/t.impr*100:0;
+    const tc=t.shop+t.video+t.display+t.search||1;
+    const sRoas=t.shop>0?t.shopVal/t.shop:0;const vRoas=t.video>0?t.videoVal/t.video:0;
+    const dRoas=t.display>0?t.displayVal/t.display:0;const xRoas=t.search>0?t.searchVal/t.search:0;
+    const sk=skMap[t.acc+'||'+t.camp]||{shop:[],video:[],display:[],search:[]};
+    return`<tr>
+      <td title="${esc(t.camp)}">${esc(trunc(t.camp,32))}</td>
+      <td class="mc tr">$${fmt(t.cost)}</td><td class="mc tr">${t.conv.toFixed(1)}</td>
+      <td class="mc tr">$${fmt(t.val)}</td><td class="mc tr ${rc(roas)}">${roas.toFixed(2)}x</td>
+      <td class="mc tr">${fb(t.impr)}</td><td class="mc tr">${fb(t.clicks)}</td><td class="mc tr">${ctr.toFixed(2)}%</td>
+      <td class="mc tr" style="color:var(--shop)">$${fmt(t.shop)}</td><td class="mc tr">${(t.shop/tc*100).toFixed(1)}%</td><td class="mc tr ${rc(sRoas)}">${sRoas>0?sRoas.toFixed(2)+'x':'—'}</td>
+      <td class="mc tr" style="color:var(--video)">$${fmt(t.video)}</td><td class="mc tr">${(t.video/tc*100).toFixed(1)}%</td><td class="mc tr ${rc(vRoas)}">${vRoas>0?vRoas.toFixed(2)+'x':'—'}</td>
+      <td class="mc tr" style="color:var(--display)">$${fmt(t.display)}</td><td class="mc tr">${(t.display/tc*100).toFixed(1)}%</td><td class="mc tr ${rc(dRoas)}">${dRoas>0?dRoas.toFixed(2)+'x':'—'}</td>
+      <td class="mc tr" style="color:var(--search)">$${fmt(t.search)}</td><td class="mc tr">${(t.search/tc*100).toFixed(1)}%</td><td class="mc tr ${rc(xRoas)}">${xRoas>0?xRoas.toFixed(2)+'x':'—'}</td>
+      <td>${spark(sk.shop,CH.shop)}</td><td>${spark(sk.video,CH.video)}</td><td>${spark(sk.display,CH.display)}</td><td>${spark(sk.search,CH.search)}</td>
+    </tr>`;
+  }).join('')+'</tbody></table>';
+}
+
+// ── ASSET GROUPS ──────────────────────────────────────────────
+function renderAG(f){
+  const rows=fagm(f);
+  const sumMap={};
+  rows.forEach(r=>{
+    const key=r.acc+'||'+r.camp+'||'+r.ag;
+    if(!sumMap[key])sumMap[key]={acc:r.acc,camp:r.camp,ag:r.ag,str:r.str,stat:r.stat,impr:0,clicks:0,cost:0,conv:0,val:0};
+    const e=sumMap[key];e.impr+=r.impr;e.clicks+=r.clicks;e.cost+=r.cost;e.conv+=r.conv;e.val+=r.val;
+  });
+  const summary=Object.values(sumMap).sort((a,b)=>b.cost-a.cost);
+  const strC={EXCELLENT:'var(--growth)',GOOD:'var(--info)',POOR:'var(--risk)',PENDING:'var(--attention)',LEARNING:'var(--attention)'};
+
+  document.getElementById('agSumTable').innerHTML=summary.length?`<table><thead><tr>
+    <th>Campaign</th><th>Asset Group</th><th>Strength</th><th>Status</th>
+    <th class="tr">Impr</th><th class="tr">Clicks</th><th class="tr">CTR</th>
+    <th class="tr">Cost</th><th class="tr">Conv</th><th class="tr">CPA</th><th class="tr">Value</th><th class="tr">ROAS</th>
+  </tr></thead><tbody>`+
+  summary.map(r=>{
+    const ctr=r.impr>0?r.clicks/r.impr*100:0;const roas=r.cost>0?r.val/r.cost:0;const cpa=r.conv>0?r.cost/r.conv:0;
+    const sc=strC[r.str]||'var(--mid-gray)';
+    return`<tr>
+      <td title="${esc(r.camp)}">${esc(trunc(r.camp,28))}</td>
+      <td title="${esc(r.ag)}">${esc(trunc(r.ag,28))}</td>
+      <td><span style="color:${sc};font-weight:800;font-size:11px;text-transform:uppercase;letter-spacing:.04em;">${esc(r.str)}</span></td>
+      <td style="font-size:11px;color:var(--mid-gray);text-transform:uppercase;letter-spacing:.04em;">${esc(r.stat)}</td>
+      <td class="mc tr">${fb(r.impr)}</td><td class="mc tr">${fb(r.clicks)}</td><td class="mc tr">${ctr.toFixed(2)}%</td>
+      <td class="mc tr">$${fmt(r.cost)}</td><td class="mc tr">${r.conv.toFixed(1)}</td>
+      <td class="mc tr">${cpa>0?'$'+fmt(cpa):'—'}</td><td class="mc tr">$${fmt(r.val)}</td>
+      <td class="mc tr ${rc(roas)}">${roas.toFixed(2)}x</td>
+    </tr>`;
+  }).join('')+'</tbody></table>'
+  :'<div class="empty">No asset group data.</div>';
+
+  agDateTable('agImprTable',rows,'impr',v=>fb(v));
+  agDateTable('agCostTable',rows,'cost',v=>'$'+fmt(v));
+  agDateTable('agValTable',rows,'val',v=>'$'+fmt(v));
+}
+
+function agDateTable(elId,rows,metric,fmtFn){
+  const byDate={};const ags=new Set();
+  rows.forEach(r=>{const ak=trunc(r.ag,20);ags.add(ak);if(!byDate[r.date])byDate[r.date]={total:0};byDate[r.date].total+=r[metric];byDate[r.date][ak]=(byDate[r.date][ak]||0)+r[metric];});
+  const dates=Object.keys(byDate).sort().reverse();const agArr=[...ags].sort();
+  if(!dates.length){document.getElementById(elId).innerHTML='<div class="empty">No data.</div>';return;}
+  document.getElementById(elId).innerHTML=`<table><thead><tr><th>Date</th><th class="tr">Total</th>${agArr.map(a=>`<th class="tr" title="${esc(a)}">${esc(trunc(a,14))}</th>`).join('')}</tr></thead><tbody>`+
+  dates.map(d=>`<tr><td class="mc">${d}</td><td class="mc tr">${fmtFn(byDate[d].total)}</td>${agArr.map(a=>`<td class="mc tr">${byDate[d][a]?fmtFn(byDate[d][a]):'—'}</td>`).join('')}</tr>`).join('')+
+  '</tbody></table>';
+}
+
+// ── PRODUCTS ──────────────────────────────────────────────────
+function renderProducts(f){
+  const prods=fprod(f);
+  document.getElementById('ptCost').innerHTML=prodTable([...prods].sort((a,b)=>b.cost-a.cost).slice(0,20));
+  document.getElementById('ptRoas').innerHTML=prodTable([...prods].filter(p=>p.cost>0&&p.conv>0).sort((a,b)=>b.roas-a.roas).slice(0,20));
+  document.getElementById('ptConv').innerHTML=prodTable([...prods].sort((a,b)=>b.conv-a.conv).slice(0,20));
+  document.getElementById('ptWasted').innerHTML=prodTable([...prods].filter(p=>p.cost>0&&p.conv===0).sort((a,b)=>b.cost-a.cost).slice(0,20),true);
+}
+function prodTable(prods,isWasted=false){
+  if(!prods.length)return`<div class="empty">${isWasted?'No wasted spend identified.':'No product data available.'}</div>`;
+  return`<table><thead><tr><th>Product</th><th>ID</th><th class="tr">Cost</th><th class="tr">Impr</th><th class="tr">Conv</th><th class="tr">Revenue</th><th class="tr">ROAS</th><th class="tr">CPA</th></tr></thead><tbody>`+
+  prods.map(p=>`<tr class="${isWasted?'wasted':''}">
+    <td title="${esc(p.title)}">${esc(trunc(p.title,46))}</td>
+    <td class="mc" style="color:var(--mid-gray)">${esc(p.id||'—')}</td>
+    <td class="mc tr">$${fmt(p.cost)}</td><td class="mc tr">${fb(p.impr)}</td>
+    <td class="mc tr">${p.conv.toFixed(1)}</td><td class="mc tr">$${fmt(p.val)}</td>
+    <td class="mc tr ${rc(p.roas)}">${p.roas>0?p.roas.toFixed(2)+'x':'—'}</td>
+    <td class="mc tr">${p.cpa>0?'$'+fmt(p.cpa):'—'}</td>
+  </tr>`).join('')+'</tbody></table>';
+}
+
+// ── ZOMBIES ───────────────────────────────────────────────────
+function renderZombies(f){
+  const h=raw.zombies.h;const aIdx=c(h,'account_name');
+  const z=raw.zombies.r.filter(r=>f.cl==='ALL'||(r[aIdx]||'')===f.cl);
+  document.getElementById('zCount').textContent=z.length.toLocaleString();
+}
+
+// ── NAV ───────────────────────────────────────────────────────
+function nav(id,el){
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  el.classList.add('on');document.getElementById('pg-'+id).classList.add('on');
+}
+function itab(id,el){
+  const bar=el.closest('.tbar');const panel=el.closest('.panel');
+  bar.querySelectorAll('.itab').forEach(t=>t.classList.remove('on'));
+  panel.querySelectorAll('.tpane').forEach(p=>p.classList.remove('on'));
+  el.classList.add('on');document.getElementById('tp-'+id).classList.add('on');
+}
+
+// ── UTILS ─────────────────────────────────────────────────────
+function spark(data,color){const max=Math.max(...data,0.001);return`<div class="spark">${data.map(v=>`<div class="sb" style="height:${Math.max(4,v/max*100)}%;background:${color}99"></div>`).join('')}</div>`;}
+function scell(label,n,cls){return`<div class="sc"><div class="sn ${cls}">${n}</div><div class="sl">${label}</div></div>`;}
+function dc(id){if(charts[id]){charts[id].destroy();delete charts[id];}}
+function showLoader(m){document.getElementById('loaderMsg').textContent=m;document.getElementById('loader').classList.add('on');}
+function hideLoader(){document.getElementById('loader').classList.remove('on');}
+function c(h,name){return h.indexOf(name);}
+function n(v){return parseFloat(v)||0;}
+function fmt(v){v=parseFloat(v);if(v>=1e6)return(v/1e6).toFixed(1)+'M';if(v>=1e3)return(v/1e3).toFixed(1)+'K';return v.toFixed(2);}
+function fb(v){v=parseInt(v);if(v>=1e6)return(v/1e6).toFixed(1)+'M';if(v>=1e3)return(v/1e3).toFixed(0)+'K';return(v||0).toLocaleString();}
+function trunc(s,n){s=String(s||'');return s.length>n?s.substring(0,n)+'…':s;}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function rc(r){return r>=3?'rh':r>=2?'rm':'rl';}
+
+// ── EXPORT — each graph & table downloads separately as raw-data CSV ──
+// Graphs come straight from the live Chart.js datasets (already raw).
+// Tables are rebuilt from the Derived Layer so values are full-precision
+// numbers (no $/K/M/x/% formatting), honouring the active filters.
+function csvCell(v){v=(v==null?'':String(v));return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;}
+
+function downloadCsv(rows,fileBase){
+  const cs=document.getElementById('selClient');
+  const clientName=cs?cs.options[cs.selectedIndex].text:'All';
+  const safeClient=clientName.replace(/[^A-Za-z0-9]+/g,'_').replace(/^_|_$/g,'')||'All';
+  const stamp=new Date().toISOString().slice(0,10);
+  const csv=rows.map(r=>r.map(csvCell).join(',')).join('\n');
+  const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8;'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='PMax_'+fileBase+'_'+safeClient+'_'+stamp+'.csv';
+  document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},0);
+}
+
+// Live Chart.js instance → raw rows (labels × datasets)
+function chartToRows(chart){
+  if(!chart)return null;
+  const labels=chart.data.labels||[];
+  const ds=(chart.data.datasets||[]);
+  const header=['Label'].concat(ds.map((d,i)=>d.label||(ds.length>1?'Series '+(i+1):'Value')));
+  const rows=[header];
+  labels.forEach((lab,i)=>rows.push([lab].concat(ds.map(d=>d.data[i]))));
+  return rows;
+}
+
+// ── Raw-data builders for each table (mirror the render functions) ──
+function bCampaigns(){
+  const t=ftot(getF()).slice().sort((a,b)=>b.cost-a.cost);
+  const rows=[['Campaign','Cost','Conversions','Value','ROAS','Impressions','Clicks','CTR %',
+    'Shop Cost','Shop %','Shop ROAS','Video Cost','Video %','Video ROAS',
+    'Display Cost','Display %','Display ROAS','Search Cost','Search %','Search ROAS']];
+  t.forEach(r=>{
+    const tc=r.shop+r.video+r.display+r.search||1;
+    rows.push([r.camp,r.cost,r.conv,r.val,r.cost>0?r.val/r.cost:0,r.impr,r.clicks,r.impr>0?r.clicks/r.impr*100:0,
+      r.shop,r.shop/tc*100,r.shop>0?r.shopVal/r.shop:0,
+      r.video,r.video/tc*100,r.video>0?r.videoVal/r.video:0,
+      r.display,r.display/tc*100,r.display>0?r.displayVal/r.display:0,
+      r.search,r.search/tc*100,r.search>0?r.searchVal/r.search:0]);
+  });
+  return rows;
+}
+function bAgSummary(){
+  const m={};
+  fagm(getF()).forEach(r=>{
+    const k=r.acc+'||'+r.camp+'||'+r.ag;
+    if(!m[k])m[k]={camp:r.camp,ag:r.ag,str:r.str,stat:r.stat,impr:0,clicks:0,cost:0,conv:0,val:0};
+    const e=m[k];e.impr+=r.impr;e.clicks+=r.clicks;e.cost+=r.cost;e.conv+=r.conv;e.val+=r.val;
+  });
+  const rows=[['Campaign','Asset Group','Strength','Status','Impressions','Clicks','CTR %','Cost','Conversions','CPA','Value','ROAS']];
+  Object.values(m).sort((a,b)=>b.cost-a.cost).forEach(r=>rows.push([
+    r.camp,r.ag,r.str,r.stat,r.impr,r.clicks,r.impr>0?r.clicks/r.impr*100:0,
+    r.cost,r.conv,r.conv>0?r.cost/r.conv:0,r.val,r.cost>0?r.val/r.cost:0]));
+  return rows;
+}
+function bAgDate(metric){
+  const byDate={};const ags=new Set();
+  fagm(getF()).forEach(r=>{ags.add(r.ag);if(!byDate[r.date])byDate[r.date]={total:0};
+    byDate[r.date].total+=r[metric];byDate[r.date][r.ag]=(byDate[r.date][r.ag]||0)+r[metric];});
+  const dates=Object.keys(byDate).sort().reverse();const agArr=[...ags].sort();
+  const rows=[['Date','Total',...agArr]];
+  dates.forEach(d=>rows.push([d,byDate[d].total,...agArr.map(a=>byDate[d][a]||0)]));
+  return rows;
+}
+function prodRows(list){
+  const rows=[['Product','ID','Cost','Impressions','Conversions','Revenue','ROAS','CPA']];
+  list.forEach(p=>rows.push([p.title,p.id||'',p.cost,p.impr,p.conv,p.val,p.roas,p.cpa]));
+  return rows;
+}
+function bProdCost(){return prodRows(fprod(getF()).slice().sort((a,b)=>b.cost-a.cost).slice(0,20));}
+function bProdRoas(){return prodRows(fprod(getF()).filter(p=>p.cost>0&&p.conv>0).sort((a,b)=>b.roas-a.roas).slice(0,20));}
+function bProdConv(){return prodRows(fprod(getF()).slice().sort((a,b)=>b.conv-a.conv).slice(0,20));}
+function bProdWasted(){return prodRows(fprod(getF()).filter(p=>p.cost>0&&p.conv===0).sort((a,b)=>b.cost-a.cost).slice(0,20));}
+function bSpark(){
+  const dates=DL.allDates||[];
+  const rows=[['Campaign','Channel',...dates]];
+  fskp(getF()).slice().sort((a,b)=>a.camp<b.camp?-1:1).forEach(r=>{
+    ['shop','video','display','search'].forEach(ch=>rows.push([r.camp,ch,...dates.map((_,i)=>r[ch][i]||0)]));
+  });
+  return rows;
+}
+
+// Menu definition: each entry downloads its own file
+const EXPORT_ITEMS=[
+  {g:'Graphs',label:'Cost Trend by Date',           file:'cost_trend',           fn:()=>chartToRows(charts.trendChart)},
+  {g:'Graphs',label:'Network Split — Cost',         file:'network_cost',         fn:()=>chartToRows(charts.pieCost)},
+  {g:'Graphs',label:'Network Split — Conversions',  file:'network_conv',         fn:()=>chartToRows(charts.pieConv)},
+  {g:'Graphs',label:'Network Split — Conv Value',   file:'network_value',        fn:()=>chartToRows(charts.pieVal)},
+  {g:'Graphs',label:'Cost % by Channel Over Time',  file:'cost_pct_over_time',   fn:()=>chartToRows(charts.netLineChart)},
+  {g:'Graphs',label:'Cost % by Channel / Campaign', file:'cost_pct_by_campaign', fn:()=>chartToRows(charts.stackPctChart)},
+  {g:'Graphs',label:'Spend by Channel / Campaign',  file:'spend_by_campaign',    fn:()=>chartToRows(charts.stackAbsChart)},
+  {g:'Tables',label:'Campaigns',                    file:'campaigns',            fn:bCampaigns},
+  {g:'Tables',label:'Asset Groups — Summary',       file:'asset_groups_summary', fn:bAgSummary},
+  {g:'Tables',label:'Asset Groups — Impr by Date',  file:'asset_groups_impr',    fn:()=>bAgDate('impr')},
+  {g:'Tables',label:'Asset Groups — Cost by Date',  file:'asset_groups_cost',    fn:()=>bAgDate('cost')},
+  {g:'Tables',label:'Asset Groups — Value by Date', file:'asset_groups_value',   fn:()=>bAgDate('val')},
+  {g:'Tables',label:'Products — Top by Cost',       file:'products_cost',        fn:bProdCost},
+  {g:'Tables',label:'Products — Top by ROAS',       file:'products_roas',        fn:bProdRoas},
+  {g:'Tables',label:'Products — Top by Conversions',file:'products_conv',        fn:bProdConv},
+  {g:'Tables',label:'Products — Wasted Spend',      file:'products_wasted',      fn:bProdWasted},
+  {g:'Tables',label:'Campaign Network Trends (daily)',file:'network_trends_daily',fn:bSpark}
+];
+
+function buildDlMenu(){
+  const menu=document.getElementById('dlMenu');if(!menu)return;
+  let html='';let grp='';
+  EXPORT_ITEMS.forEach((it,i)=>{
+    if(it.g!==grp){grp=it.g;html+=`<div class="dl-grp">${grp}</div>`;}
+    html+=`<div class="dl-item" onclick="dlOne(${i})"><span>${esc(it.label)}</span><span class="dl-ic">⬇</span></div>`;
+  });
+  html+=`<div class="dl-item dl-all" onclick="dlAll()"><span>Download all (separate files)</span><span class="dl-ic">⬇⬇</span></div>`;
+  menu.innerHTML=html;
+}
+function dlOne(i){
+  const it=EXPORT_ITEMS[i];const rows=it.fn();
+  if(!rows||rows.length<2){alert('No data for "'+it.label+'" with the current filters.');return;}
+  downloadCsv(rows,it.file);
+  document.getElementById('dlMenu').classList.remove('on');
+}
+function dlAll(){
+  let n=0;
+  EXPORT_ITEMS.forEach((it,idx)=>{
+    const rows=it.fn();
+    if(rows&&rows.length>1)setTimeout(()=>downloadCsv(rows,it.file),n++*250);
+  });
+  document.getElementById('dlMenu').classList.remove('on');
+  if(!n)alert('Nothing to export yet — load data first.');
+}
+function toggleDlMenu(ev){
+  ev.stopPropagation();
+  const menu=document.getElementById('dlMenu');
+  if(!menu.innerHTML)buildDlMenu();
+  menu.classList.toggle('on');
+}
+document.addEventListener('click',e=>{
+  const menu=document.getElementById('dlMenu');
+  if(menu&&menu.classList.contains('on')&&!e.target.closest('.dl-wrap'))menu.classList.remove('on');
+});
+</script>
+</body>
+</html>
